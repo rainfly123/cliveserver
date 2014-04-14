@@ -8,4 +8,4 @@ Input and Output
 Http+TS, Http+FLV and RTMP.
  If you want to use rtmp out, you should install nginx-rtmp-module, cliveserver just demux the input
 stream ,then send it out to nginx-rtmp server.
- If you want to user rtmp input, you should install rtmpdump firstly.
+ If you want to user rtmp input, you should install rtmpdump firstly. 
