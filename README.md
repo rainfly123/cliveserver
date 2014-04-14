@@ -4,8 +4,8 @@ cliveserver
 on multi-platform, for example , android platform, ios platform, windows platform.
 Input and Output
 =========
- The input format could be TS over TCP, FLV over TCP, output could be HLS segment, HDS segment
+  The input format could be TS over TCP, FLV over TCP, output could be HLS segment, HDS segment
 Http+TS, Http+FLV and RTMP.
  If you want to use rtmp out, you should install nginx-rtmp-module, cliveserver just demux the input
 stream ,then send it out to nginx-rtmp server.
- If you wanto user rtmp input, you should install rtmpdump firstly.
+ If you want to user rtmp input, you should install rtmpdump firstly.
