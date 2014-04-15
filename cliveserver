@@ -1,0 +1,20 @@
+{
+    server_ip: "127.0.0.1", //local server run IP
+    channels: [
+     {
+       channel_name: "cnc_channel",
+       input_type: "ts", //flv, rtmp
+       input_url: "tcp://127.0.0.1:9090",
+       output:[{output_type: "http+ts", output_url: "http://127.0.0.1:80/cnc_ts"}, 
+              {output_type: "http+flv", output_url: "http://127.0.0.1:80/cnc_flv"}]
+      },
+      {
+       channel_name: "tvb_channel",
+       input_type: "ts", //flv, rtmp
+       input_url: "tcp://127.0.0.1:9090",
+       output:[{output_type: "http+ts", output_url: "http://127.0.0.1:80/tvb_ts"}, 
+              {output_type: "http+flv", output_url: "http://127.0.0.1:80/tvb_flv"}]
+      }
+    
+    ]
+}
