@@ -45,9 +45,16 @@ enum OutputType {
 extern List_t all_channels;
 
 typedef struct {
+    OutputType output_type;
+    void *media;
+    void *protocol;
+}OutputFormat;
+
+typedef struct {
     struct con connection;
     int input_type;
-    int output_type;
+    OutputFormat *outputs;
+    int total;     //total number of outputs
  
 }channel;
 
