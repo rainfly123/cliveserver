@@ -18,4 +18,17 @@
   * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
   *
   */
-typetytypedef struct 
+  
+#ifndef _CLIVE_CHANNEL_H_
+#define _CLIVE_CHANNEL_H_
+
+#include "util.h""
+#include "list.h"
+
+extern List_t all_channels;
+
+typedef struct {
+ 
+}channel;
+
+#endif
