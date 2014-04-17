@@ -27,25 +27,35 @@
 #include "con.h"
 
 enum InputType {
-     tcp_ts = 1,
-     tcp_flv = 2,
-     udp_ts = 3,
-     udp_flv = 4,
-     rtmp = 5,
-     unknown = -1
+     TS = 1,
+     FLV = 2,
+     Unknown = -1
 };
+enum InputProtocol {
+    TCP = 1,
+    UDP = 2,
+    RTMP = 3,
+    Unknown = -1
+};
+
 enum OutputType {
-     http_ts = 1,
-     http_flv = 2,
-     hls = 3,
-     hds = 4,
-     rtmp = 5,
-     unknown = -1
+     TS = 1,
+     FLV = 2,
+     Unknown = -1
 };
+enum OutputProtocol {
+     HTTP = 1,//flv or ts
+     HLS = 2,
+     HDS = 3,
+     RTMP = 4,
+     Unknown = -1
+};
+
 extern List_t all_channels;
 
 typedef struct {
     OutputType output_type;
+    OutputProtocol output_protocol
     void *media; //has output Pads, write out to protocol's buffer
    // void *protocol;
 }OutputFormat;
@@ -54,7 +64,9 @@ typedef struct {
     struct con connection;
     struct kfifo *buffer;
     int input_type;
-    OutputFormat *outputs;
+    int input_protocol;
+    
+    OutputFormat *outputs[4];
     int total;     //total number of outputs
  
 }channel;
