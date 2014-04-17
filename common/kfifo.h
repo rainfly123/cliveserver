@@ -21,4 +21,8 @@ unsigned int kfifo_put(struct kfifo *fifo,
 unsigned int kfifo_put(struct kfifo *fifo,
                 const unsigned char *buffer, unsigned int len)
 
- unsigned int kfifo_len(struct kfifo *fifo)
+#define kfifo_len(fifo) \
+ ({ \
+         typeof((fifo) + 1) __tmpl = (fifo); \
+         __tmpl->kfifo.in - __tmpl->kfifo.out; \
+ })
