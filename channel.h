@@ -54,10 +54,10 @@ enum OutputProtocol {
 extern List_t all_channels;
 
 typedef struct {
-    OutputType output_type;
+    OutputType output_type; //FLV OR TS
     OutputProtocol output_protocol
-    void *media; //has output Pads, write out to protocol's buffer
-   // void *protocol;
+    void *media; //write out to protocol's kfifo buffer
+    void *protocol; // media + sizeof(void *) is equal prototol 
 }OutputFormat;
 
 typedef struct {
@@ -66,8 +66,8 @@ typedef struct {
     int input_type;
     int input_protocol;
     
-    OutputFormat *outputs[4];
-    int total;     //total number of outputs
+    OutputFormat *outputs[2]; //FLV OR TS
+    int total;     //total number of outputs, maximum 2
  
 }channel;
 
