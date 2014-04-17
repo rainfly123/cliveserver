@@ -56,8 +56,8 @@ extern List_t all_channels;
 typedef struct {
     OutputType output_type; //FLV OR TS
     OutputProtocol output_protocol
-    void *media; //write out to protocol's kfifo buffer
-    void *protocol; // media + sizeof(void *) is equal to prototol 
+    void *media; // write out to protocol's kfifo buffer
+                 // protocol can register to media's pads
 }OutputFormat;
 
 typedef struct {
