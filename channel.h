@@ -46,8 +46,8 @@ extern List_t all_channels;
 
 typedef struct {
     OutputType output_type;
-    void *media;
-    void *protocol;
+    void *media; //has output Pads, write out to protocol's buffer
+   // void *protocol;
 }OutputFormat;
 
 typedef struct {
