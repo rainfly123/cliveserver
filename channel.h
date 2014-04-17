@@ -57,7 +57,7 @@ typedef struct {
     OutputType output_type; //FLV OR TS
     OutputProtocol output_protocol
     void *media; //write out to protocol's kfifo buffer
-    void *protocol; // media + sizeof(void *) is equal prototol 
+    void *protocol; // media + sizeof(void *) is equal to prototol 
 }OutputFormat;
 
 typedef struct {
