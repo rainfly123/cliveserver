@@ -1,5 +1,5 @@
 /*
-  * A generic task thread implementation
+  * A generic log implementation
   *
   * Copyright (C) 2014 rainfly123 <xiechc@gmail.com>
   *
