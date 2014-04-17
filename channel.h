@@ -52,6 +52,7 @@ typedef struct {
 
 typedef struct {
     struct con connection;
+    struct kfifo *buffer;
     int input_type;
     OutputFormat *outputs;
     int total;     //total number of outputs
