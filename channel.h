@@ -22,12 +22,32 @@
 #ifndef _CLIVE_CHANNEL_H_
 #define _CLIVE_CHANNEL_H_
 
-#include "util.h""
+#include "util.h"
 #include "list.h"
+#include "con.h"
 
+enum InputType {
+     tcp_ts = 1,
+     tcp_flv = 2,
+     udp_ts = 3,
+     udp_flv = 4,
+     rtmp = 5,
+     unknown = -1
+};
+enum OutputType {
+     http_ts = 1,
+     http_flv = 2,
+     hls = 3,
+     hds = 4,
+     rtmp = 5,
+     unknown = -1
+};
 extern List_t all_channels;
 
 typedef struct {
+    struct con connection;
+    int input_type;
+    int output_type;
  
 }channel;
 
