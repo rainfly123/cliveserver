@@ -15,7 +15,7 @@ pthread_t clive_task_create(void * (*Run)(void * inData) , void *inParam)
     //param.sched_priority=max_priority;
     //pthread_attr_setschedparam(&attr,&param);
     err = pthread_create(&tid, &attr, Run, inParam);
-    if(err != 0 ) 
+    if (err != 0 ) 
     {
         perror("Error:thread:");
         return -1 ;

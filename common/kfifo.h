@@ -1,28 +1,22 @@
-#
+#ifndef _CLIVE_KFIFO_H_
+#define _CLIVE_KFIFO_H_
+#include <stdint.h>
+
 struct kfifo {
     unsigned char *buffer;     /* the buffer holding the data */
     unsigned int size;         /* the size of the allocated buffer */
     unsigned int in;           /* data is added at offset (in % size) */
     unsigned int out;          /* data is extracted from off. (out % size) */
-    spinlock_t *lock;          /* protects concurrent modifications */
 };
 
- struct kfifo *kfifo_init(unsigned char *buffer, unsigned int size,
-                  gfp_t gfp_mask, spinlock_t *lock);
+struct kfifo *kfifo_alloc(uint32_t size);
 
-  struct kfifo *kfifo_alloc(unsigned int size, gfp_t gfp_mask,
-                   spinlock_t *lock);
+void kfifo_free(struct kfifo *fifo);
 
-  void kfifo_free(struct kfifo *fifo)
+uint32_t  kfifo_put(struct kfifo *fifo, const uint8_t *buffer, uint32_t len);
 
-unsigned int kfifo_put(struct kfifo *fifo,
-                const unsigned char *buffer, unsigned int len)
+uint32_t  kfifo_get(struct kfifo *fifo, uint32_t *buffer, uint32_t len);
+uint32_t  kfifo_len(struct kfifo *fifo);
 
-unsigned int kfifo_put(struct kfifo *fifo,
-                const unsigned char *buffer, unsigned int len)
 
-#define kfifo_len(fifo) \
- ({ \
-         typeof((fifo) + 1) __tmpl = (fifo); \
-         __tmpl->kfifo.in - __tmpl->kfifo.out; \
- })
+#endif
