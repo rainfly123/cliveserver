@@ -10,17 +10,15 @@
 #include "timer.h"
 
 
-struct http{
+struct http {
     struct con connection;
     uint8_t  rbuffer[1024];
     uint32_t rlen;
-    uint8_t sbuffer[256];
-    uint32_t slen;
-    uint32_t send_bytes;
-    struct timer * timer;
 };
 
 /*
 */
-struct http * clive_http_new(struct event_base *evb);
+struct http * clive_http_server_new(struct event_base *evb， int port);
+int clive_http_server_start(struct http *ctx);
+int clive_http_server_stop(struct http *ctx);
 #endif
