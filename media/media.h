@@ -35,7 +35,7 @@ enum Media_Type {
     int media_type; \
     struct kfifo *input_buffer; \
     //read from the input_buffer
-    List_t output_buffers ;
+    List_t output_pads ;
     //write out to the ouput_buffers
     
 
