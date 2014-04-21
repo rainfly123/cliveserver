@@ -61,14 +61,20 @@ typedef struct {
 
 typedef struct {
     struct con connection;
-    struct kfifo *buffer;
+    char channel_name[32];
+    struct kfifo *buffer; //channel's input buffer
     int input_type;
     int input_protocol;
-    char channel_name[32];
     
     OutputFormat *outputs[2]; //FLV OR TS
     int total;     //total number of outputs, maximum 2
  
-}channel;
+}Channel;
+
+Channel *clive_new_channel(char *url);
+
+int clive_channel_start(Channel * channel);
+
+int clive_channel_stop(Channel *channel);
 
 #endif
