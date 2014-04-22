@@ -42,10 +42,12 @@ enum Media_Type {
     //store PSI OR FLV HEAD AND SEQUENCE
     
 
-void * clive_media_create(int media_type);
+void * clive_media_create(int media_type, struct kfifo *in_buffer);
 
 int clive_media_start(void *media);
 
 int clive_media_stop(void *media);
+
+int clive_media_release(void *media);
 
 #endif
