@@ -15,7 +15,8 @@ void kfifo_free(struct kfifo *fifo);
 
 uint32_t  kfifo_put(struct kfifo *fifo, const uint8_t *buffer, uint32_t len);
 
-uint32_t  kfifo_get(struct kfifo *fifo, uint32_t *buffer, uint32_t len);
+uint32_t  kfifo_get(struct kfifo *fifo, uint8_t *buffer, uint32_t len);
+
 uint32_t  kfifo_len(struct kfifo *fifo);
 
 

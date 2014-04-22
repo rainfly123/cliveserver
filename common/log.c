@@ -188,7 +188,7 @@ _log(const char *file, int line, int panic, const char *fmt, ...)
 
     buf[len++] = '\n';
 
-    n = sdk_write(l->fd, buf, len);
+    n = clive_write(l->fd, buf, len);
     if (n < 0) {
         l->nerror++;
     }
@@ -219,7 +219,7 @@ _log_stderr(const char *fmt, ...)
 
     buf[len++] = '\n';
 
-    n = sdk_write(STDERR_FILENO, buf, len);
+    n = clive_write(STDERR_FILENO, buf, len);
     if (n < 0) {
         l->nerror++;
     }
@@ -284,7 +284,7 @@ _log_hexdump(const char *file, int line, char *data, int datalen,
         off += 16;
     }
 
-    n = sdk_write(l->fd, buf, len);
+    n = clive_write(l->fd, buf, len);
     if (n < 0) {
         l->nerror++;
     }

@@ -26,19 +26,19 @@
 #include "udp.h"
 
 
-int32_t sdk_udp_socket(void)
+int32_t clive_udp_socket(void)
 {
     return socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP );
 }
 
 /* ����socket */
-void sdk_udp_close( int32_t skt )
+void clive_udp_close( int32_t skt )
 {
     if (skt != -1 )
         close( skt );
 }
 
-int32_t sdk_udp_bind( int32_t skt, int8_t *ip, uint16_t port )
+int32_t clive_udp_bind( int32_t skt, int8_t *ip, uint16_t port )
 {
     struct sockaddr_in local;
     memset( &local, 0, sizeof(local) );
@@ -50,7 +50,7 @@ int32_t sdk_udp_bind( int32_t skt, int8_t *ip, uint16_t port )
     return 0;
 }
 
-int32_t sdk_udp_send( int32_t skt, int8_t *ip, uint16_t port, void *buf, uint32_t size )
+int32_t clive_udp_send( int32_t skt, int8_t *ip, uint16_t port, void *buf, uint32_t size )
 {
     struct sockaddr_in sn;
     uint32_t slen = sizeof(sn);
@@ -64,7 +64,7 @@ int32_t sdk_udp_send( int32_t skt, int8_t *ip, uint16_t port, void *buf, uint32_
     return sendto(skt, buf, size, 0, (struct sockaddr *)&sn, slen);
 }
 
-int32_t sdk_udp_recv( int32_t skt, uint32_t *ip, uint16_t *port, void *buf, uint32_t size )
+int32_t clive_udp_recv( int32_t skt, uint32_t *ip, uint16_t *port, void *buf, uint32_t size )
 {
     struct sockaddr_in from;
     uint32_t slen = sizeof(from);

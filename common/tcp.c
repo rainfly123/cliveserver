@@ -26,7 +26,7 @@
  * 
  * @return 
  */
-int sdk_tcp_socket()
+int clive_tcp_socket()
 {
     return socket( AF_INET, SOCK_STREAM, 0);
 }
@@ -36,7 +36,7 @@ int sdk_tcp_socket()
  * 
  * @param skt 
  */
-void sdk_tcp_close( int skt )
+void clive_tcp_close( int skt )
 {
     if ( skt > 0)
         close( skt );
@@ -51,7 +51,7 @@ void sdk_tcp_close( int skt )
  * 
  * @return 
  */
-int sdk_tcp_connect( int skt, unsigned long ip, unsigned short port )
+int clive_tcp_connect( int skt, unsigned long ip, unsigned short port )
 {
     struct sockaddr_in addr;
 
@@ -72,7 +72,7 @@ int sdk_tcp_connect( int skt, unsigned long ip, unsigned short port )
  * 
  * @return 
  */
-int sdk_tcp_bind( int skt, unsigned long ip, unsigned short port )
+int clive_tcp_bind( int skt, unsigned long ip, unsigned short port )
 {
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
@@ -89,7 +89,7 @@ int sdk_tcp_bind( int skt, unsigned long ip, unsigned short port )
  * 
  * @return 
  */
-int sdk_tcp_listen( int skt, int max )
+int clive_tcp_listen( int skt, int max )
 {
     return listen( skt, max );
 }
@@ -103,7 +103,7 @@ int sdk_tcp_listen( int skt, int max )
  * 
  * @return 
  */
-int sdk_tcp_accept( int skt, unsigned long *ip, unsigned short *port )
+int clive_tcp_accept( int skt, unsigned long *ip, unsigned short *port )
 {
     struct sockaddr_in from;
     unsigned int slen = sizeof(from);
@@ -119,7 +119,7 @@ int sdk_tcp_accept( int skt, unsigned long *ip, unsigned short *port )
     return skt;
 }
 
-int sdk_tcp_select( int skt, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, int timeout )
+int clive_tcp_select( int skt, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, int timeout )
 {
     struct timeval tv;
 

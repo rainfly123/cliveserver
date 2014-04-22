@@ -9,33 +9,15 @@
      if (size % 2 != 0) {
          size += 1;
      }
-     ret = (struct kfifo *)sdk_alloc(sizeof(struct kfifo));
-     buffer = sdk_alloc(size);
-     fifo->buffer = buffer;
-     fifo->size = size;
-     fifo->in = fifo->out = 0;
+     ret = (struct kfifo *)clive_alloc(sizeof(struct kfifo));
+     buffer = clive_alloc(size);
+     ret->buffer = buffer;
+     ret->size = size;
+     ret->in = ret->out = 0;
      return ret;
  }
 
-static inline uint32_t kfifo_put(struct kfifo *fifo,
-                 const uint8_t *buffer, uint32_t len)
- {
-     uint32_t ret;
-     ret = __kfifo_put(fifo, buffer, len);
-     return ret;
- }
- 
- static inline unsigned int kfifo_get(struct kfifo *fifo,
-                      unsigned char *buffer, unsigned int len)
- {
-     uint32_t ret;
-     ret = __kfifo_get(fifo, buffer, len);
-     if (fifo->in == fifo->out)
-         fifo->in = fifo->out = 0;
-     return ret;
- }
- 
- 
+
  uint32_t __kfifo_put(struct kfifo *fifo,
              const uint8_t *buffer, uint32_t len)
  {
@@ -66,6 +48,27 @@ uint32_t __kfifo_get(struct kfifo *fifo,
      fifo->out += len; 
      return len;
  }
-uint32_t kfifo_len(struct fifo *fifo) {
-        return (fifo->in - fifo.out); 
+
+uint32_t kfifo_len(struct kfifo *fifo) {
+        return (fifo->in - fifo->out); 
 }
+
+uint32_t kfifo_put(struct kfifo *fifo,
+                 const uint8_t *buffer, uint32_t len)
+ {
+     uint32_t ret;
+     ret = __kfifo_put(fifo, buffer, len);
+     return ret;
+ }
+ 
+uint32_t kfifo_get(struct kfifo *fifo,
+                      uint8_t *buffer, unsigned int len)
+ {
+     uint32_t ret;
+     ret = __kfifo_get(fifo, buffer, len);
+     if (fifo->in == fifo->out)
+         fifo->in = fifo->out = 0;
+     return ret;
+ }
+ 
+ 

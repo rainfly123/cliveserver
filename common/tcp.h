@@ -20,13 +20,13 @@ extern "C"
  * @brief create tcp socket
  * @return socket fd if succeeded ,-1 esle
  */
-int sdk_tcp_socket();
+int clive_tcp_socket();
 
 /** 
  * @brief close socket
  * @param skt socket fd
  */
-void sdk_tcp_close( int skt );
+void clive_tcp_close( int skt );
 
 /** 
  * @brief connect remote server
@@ -35,7 +35,7 @@ void sdk_tcp_close( int skt );
  * @param port remoter server port (network byte order)
  * @return -1 failed
  */
-int sdk_tcp_connect( int skt, unsigned long ip, unsigned short port );
+int clive_tcp_connect( int skt, unsigned long ip, unsigned short port );
 
 /** 
  * @brief bind local socket
@@ -44,7 +44,7 @@ int sdk_tcp_connect( int skt, unsigned long ip, unsigned short port );
  * @param port local port (network byte order)
  * @return -1 failed
  */
-int sdk_tcp_bind( int skt, unsigned long ip, unsigned short port );
+int clive_tcp_bind( int skt, unsigned long ip, unsigned short port );
 
 /*  
  * @brief listen local 
@@ -52,7 +52,7 @@ int sdk_tcp_bind( int skt, unsigned long ip, unsigned short port );
  * @param max 5
  * @return
  */
-int sdk_tcp_listen( int skt, int max );
+int clive_tcp_listen( int skt, int max );
 
 /** 
  * @brief 
@@ -61,9 +61,9 @@ int sdk_tcp_listen( int skt, int max );
  * @param port 
  * @return 
  */
-int sdk_tcp_accept( int skt, unsigned long *ip, unsigned short *port );
+int clive_tcp_accept( int skt, unsigned long *ip, unsigned short *port );
 
-int sdk_tcp_select( int skt, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, int timeout );
+int clive_tcp_select( int skt, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, int timeout );
 
 #ifdef __cplusplus
 }

@@ -21,10 +21,10 @@ Generic list management functions.
 
 */
 
-#ifndef __LIST_H__
-#define __LIST_H__
+#ifndef _CLIVE_LIST_H__
+#define _CLIVE_LIST_H__
 
-#include "stdafx.h"
+#include "util.h"
 /**
  * @defgroup List Generic Linked List
  *@{

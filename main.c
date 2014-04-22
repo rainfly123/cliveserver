@@ -24,7 +24,8 @@
 #include "log.h"
 #include "timer.h"
 #include "http.h"
-#include "media.h
+#include "media.h"
+
 static int clive_core_close(struct con *conn)
 {
     struct event_base *evb;
@@ -134,7 +135,7 @@ static int timer_handle(struct timer *timer, void *data)
     log_debug(LOG_DEBUG, "timer expired %d\n", *d);
     clive_timer_update_time(timer, 3000);
 }
-static int timer_test(bool dameon)
+static int test_timer(bool dameon)
 {
     int nsd;
     int c = 10;
@@ -154,12 +155,9 @@ static int timer_test(bool dameon)
 
 int main()
 {
-signal(SIGPIPE, SIG_IGN);
-// timer_test(1);
-//loop();
-//test_http();
-//schedule();
-//test_live();
-// test_client();
- test_file();
+    struct sigaction sa;
+
+    sa.sa_handler = SIG_IGN;
+    sigaction(SIGPIPE, &sa, 0 );
+
 }

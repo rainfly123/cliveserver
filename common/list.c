@@ -21,6 +21,7 @@ Generic list management functions.
 
 */
 #include <stdlib.h>
+#include <stdio.h>
 #include "list.h"
 
 /*******************************************************************************

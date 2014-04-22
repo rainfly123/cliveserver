@@ -24,15 +24,15 @@ extern "C"
 #endif
 #include "util.h"
 
-int32_t sdk_udp_socket(void);
+int32_t clive_udp_socket(void);
 
-void sdk_udp_close( int32_t skt );
+void clive_udp_close( int32_t skt );
 
-int32_t sdk_udp_bind( int32_t skt, int8_t *ip, uint16_t port);
+int32_t clive_udp_bind( int32_t skt, int8_t *ip, uint16_t port);
 
-int32_t sdk_udp_send( int32_t skt, int8_t *ip, uint16_t port, void *buf, uint32_t size);
+int32_t clive_udp_send( int32_t skt, int8_t *ip, uint16_t port, void *buf, uint32_t size);
 
-int32_t sdk_udp_recv( int32_t skt, uint32_t *ip, uint16_t *port, void *buf, uint32_t size);
+int32_t clive_udp_recv( int32_t skt, uint32_t *ip, uint16_t *port, void *buf, uint32_t size);
 #ifdef __cplusplus
 }
 #endif
