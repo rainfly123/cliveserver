@@ -27,35 +27,26 @@
 #include "con.h"
 #include "media.h"
 
-enum InputType {
-     TS = 1,
-     FLV = 2,
+enum MediaType {
+     TS = 0,
+     FLV = 1,
      Unknown = -1
 };
-enum InputProtocol {
+enum Protocol {
+    UDP = 0,
     TCP = 1,
-    UDP = 2,
+    HTTP = 2,
     RTMP = 3,
+    HLS = 1,
+    HDS = 2,
     Unknown = -1
 };
 
-enum OutputType {
-     TS = 1,
-     FLV = 2,
-     Unknown = -1
-};
-enum OutputProtocol {
-     HTTP = 1,//flv or ts
-     HLS = 2,
-     HDS = 3,
-     RTMP = 4,
-     Unknown = -1
-};
 
 extern List_t all_channels;
 
 typedef struct {
-    OutputType output_type; //FLV OR TS
+    int media_type; //FLV OR TS
     sMedia *media; // write out to protocol's kfifo buffer
                  // protocol can register kfifo buffer to media's pads
 }OutputFormat;

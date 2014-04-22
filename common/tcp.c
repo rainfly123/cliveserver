@@ -19,6 +19,7 @@
 #include <sys/socket.h>
 #include <string.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include "tcp.h"
 
 /** 
@@ -72,12 +73,12 @@ int clive_tcp_connect( int skt, unsigned long ip, unsigned short port )
  * 
  * @return 
  */
-int clive_tcp_bind( int skt, unsigned long ip, unsigned short port )
+int clive_tcp_bind( int skt, char *ip, unsigned short port )
 {
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = ip;
-    addr.sin_port = port;
+    addr.sin_addr.s_addr = inet_addr(ip);
+    addr.sin_port = htons(port);
     return bind( skt, (struct sockaddr*)&addr, sizeof(addr) );
 }
 

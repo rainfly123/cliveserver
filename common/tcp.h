@@ -40,11 +40,11 @@ int clive_tcp_connect( int skt, unsigned long ip, unsigned short port );
 /** 
  * @brief bind local socket
  * @param skt socket fd
- * @param ip  local ip address (network byte order)
- * @param port local port (network byte order)
+ * @param ip  local ip address 
+ * @param port local port 
  * @return -1 failed
  */
-int clive_tcp_bind( int skt, unsigned long ip, unsigned short port );
+int clive_tcp_bind( int skt, char * ip, unsigned short port );
 
 /*  
  * @brief listen local 
