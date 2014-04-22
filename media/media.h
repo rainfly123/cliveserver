@@ -35,8 +35,11 @@ enum Media_Type {
     int media_type; \
     struct kfifo *input_buffer; \
     //read from the input_buffer
-    List_t output_pads ;
+    List_t output_pads;
     //write out to the ouput_buffers
+    void *extra_data;
+    int exdata_len;
+    //store PSI OR FLV HEAD AND SEQUENCE
     
 
 void * clive_media_create(int media_type);
