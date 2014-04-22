@@ -31,15 +31,22 @@ enum Media_Type {
     FLV2TS = 4
 };
 
-#define MEDIA \
-    int media_type; \
-    struct kfifo *input_buffer; \
-    //read from the input_buffer
-    List_t output_pads;
-    //write out to the ouput_buffers
-    void *extra_data;
-    int exdata_len;
-    //store PSI OR FLV HEAD AND SEQUENCE
+typedef struct {
+    int media_type; 
+
+    /*read from the input_buffer*/
+    struct kfifo *input_buffer; 
+
+    /*write out to the ouput_buffers*/
+    List_t output_pads; 
+
+    /*store PSI OF TS OR FLV HEAD, SEQUENCE tag,  META TAG*/
+    void *extra_data; 
+    int elen;
+
+    void * private_data;
+    int plen;
+}sMedia;
     
 
 void * clive_media_create(int media_type, struct kfifo *in_buffer);
@@ -49,5 +56,7 @@ int clive_media_start(void *media);
 int clive_media_stop(void *media);
 
 int clive_media_release(void *media);
+
+int clive_task_thread_start(void);
 
 #endif

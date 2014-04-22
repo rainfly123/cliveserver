@@ -25,6 +25,7 @@
 #include "util.h"
 #include "list.h"
 #include "con.h"
+#include "media.h"
 
 enum InputType {
      TS = 1,
@@ -55,7 +56,7 @@ extern List_t all_channels;
 
 typedef struct {
     OutputType output_type; //FLV OR TS
-    void *media; // write out to protocol's kfifo buffer
+    sMedia *media; // write out to protocol's kfifo buffer
                  // protocol can register kfifo buffer to media's pads
 }OutputFormat;
 
@@ -71,7 +72,7 @@ typedef struct {
  
 }Channel;
 
-Channel *clive_new_channel(char *url);
+Channel *clive_new_channel(struct event_base *evb, char *url);
 
 int clive_channel_start(Channel * channel);
 

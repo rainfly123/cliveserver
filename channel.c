@@ -17,10 +17,21 @@
   * along with this program; if not, write to the Free Software
   * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
   *
-  *
-  /
+  */
   
   #include "channel.h"
   #include "util.h"
   #include "log.h"
   #include "kfifo.h"
+
+Channel *clive_new_channel(struct event_base *evb, char *url)
+{
+}
+
+int clive_channel_start(Channel * channel)
+{
+}
+
+int clive_channel_stop(Channel *channel)
+{
+}
