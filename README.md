@@ -2,6 +2,7 @@ cliveserver
 ===========
  This is a open source software, its goal is to remux input stream , as to support playback
 on multi-platform, for example , android platform, ios platform, windows platform.
+ Its functionalities are similar to crtmpserver 
 Input and Output
 =========
   The input format could be TS over TCP, FLV over TCP, output could be HLS segment, HDS segment
