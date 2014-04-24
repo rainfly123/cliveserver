@@ -24,7 +24,7 @@
 
 #include "util.h"
 #include "list.h"
-#include "con.h"
+#include "event.h"
 #include "media.h"
 
 enum MediaType {
@@ -46,24 +46,22 @@ enum Protocol {
 extern List_t all_channels;
 
 typedef struct {
-    int media_type; //FLV OR TS
-    sMedia *media; // write out to protocol's kfifo buffer
-                 // protocol can register kfifo buffer to media's pads
-}OutputFormat;
-
-typedef struct {
     struct con connection;
+    struct event_base *evb;
     char channel_name[32];
-    struct kfifo *buffer; //channel's input buffer
-    int input_type;
     int input_protocol;
-    
-    OutputFormat *outputs[2]; //FLV OR TS
-    int total;     //total number of outputs, maximum 2
+    int input_media_type;
+
+    struct kfifo *buffer; //channel's input buffer
+    sMedia *ts_media; // write out to output protocol's kfifo buffer
+                     // protocol can register kfifo buffer to media's pads
+    sMedia *flv_media;
  
 }Channel;
 
-Channel *clive_new_channel(struct event_base *evb, char *url);
+Channel *clive_new_channel(struct event_base *evb, char *url, char *name);
+
+int clive_channel_add_output(Channel * channel, char *url);
 
 int clive_channel_start(Channel * channel);
 

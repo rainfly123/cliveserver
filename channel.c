@@ -23,21 +23,32 @@
 #include "util.h"
 #include "log.h"
 #include "kfifo.h"
+#include "list.h"
+#include "media.h"
 
-/*
-    create a new channel
-    url: could be:
-         1) http://x.x.x.x:80/xx //cliveserver is client
-         2) tcp://x.x.x.x:9090  //cliveserver is tcp server
-         3) udp://x.x.x.x:8080  //cliveserver is udp server
-         4) rtmp://x.x.x.x:1935/live/cnv //cliveserver is client
-*/
+//used for store all of the channels
+List_t all_channels;
+
 static const char *protocol[4] = {
     "udp://",
     "tcp://", 
     "http://", 
     "rtmp://"
 };
+
+/*
+*@brief  create a new channel
+*@param evb a pointer to event_base, which this channel will run in
+*@param url channels's input url
+*    url: could be:
+*         1) http://x.x.x.x:80/xx //cliveserver is client
+*         2) tcp://x.x.x.x:9090  //cliveserver is tcp server
+*         3) udp://x.x.x.x:8080  //cliveserver is udp server
+*         4) rtmp://x.x.x.x:1935/live/cnv //cliveserver is client
+*@return a pointer to new alloced channel
+*        NULL for failed
+*/
+
 Channel * clive_new_channel(struct event_base *evb, char *url)
 {
     Channel *channel;
@@ -49,35 +60,33 @@ Channel * clive_new_channel(struct event_base *evb, char *url)
     char ip_addr[64];
     int sport = 80;
     char location[32];
-    int input_type = -1;
+    int input_protocol = -1;
     int i = 0;
     struct sockinfo sock;
     int skt;
 
-
-
     ASSERT(evb != NULL);
     ASSERT(url != NULL);
+
     memset(ip_addr, 0, sizeof(ip_addr));
     memset(location, 0, sizeof(location));
 
     channel = clive_calloc(1, sizeof(Channel));
     ASSERT(channel != NULL);
 
-
     for (; i < sizeof(protocol) / sizeof(char *); i++)
     {
         if (!strncmp(url, protocol[i], strlen(protocol[i])))
         {
-            input_type = i;
+            input_protocol = i;
             break;
         }
     }
-    switch (input_type)
+    switch (input_protocol)
     {
         case HTTP:
         {
-            ip += strlen(protocol[input_type]);
+            ip += strlen(protocol[input_protocol]);
             port = strchr(ip, ':');
             if (port != NULL) {
                 strncpy(ip_addr, ip, port - ip);
@@ -97,7 +106,7 @@ Channel * clive_new_channel(struct event_base *evb, char *url)
         case UDP:
         case TCP:
         {
-            ip += strlen(protocol[input_type]);
+            ip += strlen(protocol[input_protocol]);
             port = strchr(ip, ':');
             if (port != NULL) {
                 strncpy(ip_addr, ip, port - ip);
@@ -110,7 +119,7 @@ Channel * clive_new_channel(struct event_base *evb, char *url)
             break;
         }
     }
-    if (input_type == TCP) {
+    if (input_protocol == TCP) {
         skt = clive_tcp_socket();
         clive_set_tcpnodelay(skt);
         clive_set_nonblocking(skt);
@@ -119,16 +128,20 @@ Channel * clive_new_channel(struct event_base *evb, char *url)
         clive_tcp_bind(skt, ip_addr, sport);
         clive_tcp_listen(skt, 3);
     }
-    if (input_type == UDP) {
+    if (input_protocol == UDP) {
         skt = clive_udp_socket();
         clive_set_nonblocking(skt);
         clive_set_sndbuf(skt, 64*1024);
         clive_set_rcvbuf(skt, 64*1024);
         clive_udp_bind(skt, ip_addr, sport);
     }
-    if (input_type == HTTP) {
+    if (input_protocol == HTTP) {
+       //.....
     }
-    channel->input_type = input_type;
+    channel->buffer = kfifo_alloc(4 * 1024 * 1024); //4Mbytes
+    channel->input_protocol = input_protocol;
+    channel->input_media_type = -1;
+    channel->evb = evb;
     channel->connection.skt = skt;
     channel->connection.send = &conn_send;
     channel->connection.recv = &conn_recv;
@@ -139,26 +152,85 @@ Channel * clive_new_channel(struct event_base *evb, char *url)
     return channel;
 }
 
+/*
+*@brief start channel*
+*@param a pointer to channel
+*@return 0 succeeded, -1 else
+*/
 int clive_channel_start(Channel * channel)
 {
     int val;
+    struct event_base *evb;
 
     ASSERT(channel != NULL);
 
+    evb = channel->evb;
     val = event_add_conn(evb, &channel->connection);
     if (val != 0) {
         return val;
     }
 
-    if ((channel->input_type == TCP) || (channel->input_type == UDP))
+    if ((channel->input_protocol == TCP) || (channel->input_protocol == UDP))
         val = event_del_out(evb, &channel->connection);
 
     return val; 
 }
 
+/*
+*@brief stop channel*
+*@param a pointer to channel
+*@return 0 succeeded, -1 else
+*/
 int clive_channel_stop(Channel *channel)
 {
     ASSERT(channel != NULL);
     return event_del_conn(evb, &timer->connection);
 }
 
+/*
+*@brief set channels outputs*
+*@param a pointer to channel
+*@param output url
+*       url could be: 
+*              "http://127.0.0.1:80/tvb_ts", 
+*              "http://127.0.0.1:80/tvb_flv",
+*              "http://127.0.0.1:80/tvb.m3u8"
+*              "rtmp://127.0.0.1:1935/live/tvb"
+*@return 0 succeeded, -1 failed
+*/
+int clive_channel_add_output(Channel * channel, char *url)
+{
+    char *protocol;
+
+    ASSERT(channel != NULL);
+    ASSERT(url != NULL);
+   
+    protocol = strstr(url, "_flv");
+    if (protocol != NULL) {
+        channel->flv_media =  clive_media_create(Unknown, channel->buffer);
+        return 0;
+    }
+    else {
+         protocol = strstr(url, "rtmp:");
+         if (protocol != NULL) {
+             channel->flv_media =  clive_media_create(Unknown, channel->buffer);
+             return 0;
+         }
+    }
+
+    protocol = strstr(url, "_ts");
+    if (protocol != NULL) {
+        channel->ts_media =  clive_media_create(Unknown, channel->buffer);
+        return 0;
+    }
+    else {
+         protocol = strstr(url, ".m3u8");
+         if (protocol != NULL) {
+             channel->ts_media =  clive_media_create(Unknown, channel->buffer);
+             return 0;
+         }
+    }
+
+    log_error("clive_channel_add_output: unsupported output protocol");
+    return -1;
+}

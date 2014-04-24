@@ -28,8 +28,11 @@
 #define EVENT_WRITE 0x00ff00
 #define EVENT_ERR   0xff0000
 
-#define tHEARTBEAT 'H'
+#define tHTTP 'H'
 #define tTIMER 'T'
+#define tTCP 'C'
+#define tUDP 'U'
+
 
 struct con;
 typedef int (*conn_recv_t)(struct con*);

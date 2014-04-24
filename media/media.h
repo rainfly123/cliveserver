@@ -24,18 +24,16 @@
 #include "kfifo.h"
 #include "list.h"
 
-enum Media_Type {
+enum Pack_Type {
     TS2TS = 1,
     TS2FLV = 2,
     FLV2FLV = 3,
-    FLV2TS = 4
+    FLV2TS = 4,
+    Unknown = -1
 };
 
 typedef struct {
-    int media_type; 
-
-    /*read from the input_buffer*/
-    struct kfifo *input_buffer; 
+    int pack_type; 
 
     /*write out to the ouput_buffers*/
     List_t output_pads; 
@@ -48,15 +46,31 @@ typedef struct {
     int plen;
 }sMedia;
     
+/*
+create a media repack task
+*/
+sMeida * clive_media_create(int pack_type);
 
-void * clive_media_create(int media_type, struct kfifo *in_buffer);
+/*
+   DO NOT call it manually,
+   chanel core will cat it automaticly
+*/
+int clive_media_start(sMeida *media);
 
-int clive_media_start(void *media);
+/*
+   stop the media repacking task
+*/
+int clive_media_stop(sMeida *media);
 
-int clive_media_stop(void *media);
+/*
+   release the media
+*/
+int clive_media_release(sMeida *media);
 
-int clive_media_release(void *media);
-
+int clive_media_add_output(sMeida *media, struct kfifo *buffer);
+/*
+  start the repacking task thread
+*/
 int clive_task_thread_start(void);
 
 #endif
