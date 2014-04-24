@@ -2,7 +2,7 @@ cliveserver
 ===========
  This is a open source software, its objective is to remux input stream , as to support playback
 on multi-platform, for example , android platform, ios platform, windows platform.
- Its functionalities are similar to crtmpserver , but you will find cliveserver is very useful in reality
+ Its functionalities are similar to crtmpserver , but you will find cliveserver is very useful in reality,
 besides, cliveserver is for free completely. you could use it in your commerical software without any worry.
 Input and Output
 =========
