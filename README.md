@@ -13,24 +13,22 @@ stream ,then send it out to nginx-rtmp server.
  If you want to user rtmp input, you should install rtmpdump firstly. 
 About Config File
 ==================
-It's json format, but not strict compliance with the json's definition,
- "{
-   channels: [
-     {
-       channel_name: "cnc", 
-       input_url: "tcp://127.0.0.1:9090",
-       output:["http://127.0.0.1:80/cnc_ts", 
-              "http://127.0.0.1:80/cnc_flv"]
-      },
-      {
-       channel_name: "tvb",
-       input_url: "tcp://127.0.0.1:9090",
-       output:["http://127.0.0.1:80/tvb_ts", 
-              "http://127.0.0.1:80/tvb_flv",
-              "http://127.0.0.1:80/tvb.m3u8"]
-      }
-    
-    ]
+It's json format, but not strict compliance with the json's definition,                                      "{                                                                                                         
+   channels: [                                                                                              
+   {                                                                                                        
+       channel_name: "cnc",                                                                                 
+       input_url: "tcp://127.0.0.1:9090",                                                                 
+       output:["http://127.0.0.1:80/cnc_ts",                                                
+              "http://127.0.0.1:80/cnc_flv"]                                                   
+      },                      
+      {                          
+       channel_name: "tvb",                   
+       input_url: "tcp://127.0.0.1:9090",             
+       output:["http://127.0.0.1:80/tvb_ts",             
+              "http://127.0.0.1:80/tvb_flv",           
+              "http://127.0.0.1:80/tvb.m3u8"]         
+      }           
+    ]                                         
   }"
   channels: is a list containing all of the channel,
   channel_name: is the channel's unique name , 
