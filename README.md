@@ -14,7 +14,7 @@ stream ,then send it out to nginx-rtmp server.
 About Config File
 ==================
 It's json format, but not strict compliance with the json's definition,
- {
+ "{
    channels: [
      {
        channel_name: "cnc", 
@@ -31,7 +31,7 @@ It's json format, but not strict compliance with the json's definition,
       }
     
     ]
-  }
+  }"
   channels: is a list containing all of the channel,
   channel_name: is the channel's unique name , 
   input_url: channel's input address , if protocol's tcp or udp , the cliveserver is the server side
