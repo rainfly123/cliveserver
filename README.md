@@ -29,8 +29,7 @@ It's json format, but not strict compliance with the json's definition,         
               "http://127.0.0.1:80/tvb.m3u8"]         
       }           
     ]                                         
-  }"
-  channels: is a list containing all of the channel,
+  }"                                                                                                            channels: is a list containing all of the channel,
   channel_name: is the channel's unique name , 
   input_url: channel's input address , if protocol's tcp or udp , the cliveserver is the server side
   else cliveserver is the client side.
