@@ -28,6 +28,11 @@
 #include "kfifo.h"
 #include "channel.h"
 
+
+const char * flv_head = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Type: video/x-flv\r\nServer: cliveserver/0.1\r\n\r\n";
+const char *ts_head = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Type: video/MP2T\r\nServer: cliveserver/0.1\r\n\r\n";
+const char *error_head = "HTTP/1.1 404 NOT FOUND\r\nContent-Type:text/html\r\nContent-Length:56\r\nConnection:Keep-Alive\r\n\r\n<html><body><center>404 Not Found</center></body></html>";
+
 struct http {
     struct con connection;
     uint8_t  rbuffer[512];
