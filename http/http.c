@@ -34,7 +34,7 @@
 const char * flv_head = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Type: video/x-flv\r\nServer: cliveserver/0.1\r\n\r\n";
 const char *ts_head = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Type: video/MP2T\r\nServer: cliveserver/0.1\r\n\r\n";
 const char *error_head = "HTTP/1.1 404 NOT FOUND\r\nContent-Type:text/html\r\nContent-Length:56\r\nConnection:Keep-Alive\r\n\r\n<html><body><center>404 Not Found</center></body></html>";
-#define HTTP_PORT 80
+#define HTTP_PORT 8080
 
 
 struct http {
@@ -125,7 +125,7 @@ struct http * clive_http_server_new(struct event_base *evb, int port)
     clive_set_sndbuf(skt, 64*1024);
     clive_set_rcvbuf(skt, 64*1024);
     clive_set_tcpnodelay(skt);
-    clive_tcp_bind(skt, "0.0.0.0", 80);
+    clive_tcp_bind(skt, "0.0.0.0", port);
     clive_tcp_listen(skt, 100);
 
     http->connection.skt = skt;
@@ -148,10 +148,11 @@ static void * Entry(void *p)
    
     do {
         if (current == NULL) {
+            pthread_mutex_lock(&lock);
             current = channels.head ;
             pthread_mutex_unlock(&lock);
             usleep(10 *1000);
-            log_debug(LOG_INFO, "all task done");
+            //log_debug(LOG_INFO, "all task done");
             continue;
         }
         task = current->data;
@@ -172,7 +173,7 @@ static void * Event_Entry(void *p)
     http = clive_http_server_new(evb, HTTP_PORT);
 
     while (1) {
-        nsd = event_wait(evb, 300);
+        nsd = event_wait(evb, 500);
         if (nsd == 0) {
             log_debug(LOG_INFO, "wait return %d", nsd);
         }
@@ -208,6 +209,10 @@ int clive_http_server_stop(void)
 #ifdef TEST
 int main(int argc, char **argv)
 {
+    log_init(LOG_PVERB,NULL);
+    clive_http_server_start();
+    sched_yield();
+    while (1) sleep(1);
 }
 #endif
 
