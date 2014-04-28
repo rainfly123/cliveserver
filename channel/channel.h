@@ -27,10 +27,11 @@
 #include "event.h"
 #include "media.h"
 
+#define Unknown (-1)
+
 enum MediaType {
      TS = 0,
      FLV = 1,
-     Unknown = -1
 };
 enum Protocol {
     UDP = 0,
@@ -39,7 +40,6 @@ enum Protocol {
     RTMP = 3,
     HLS = 1,
     HDS = 2,
-    Unknown = -1
 };
 
 

@@ -8,8 +8,8 @@
 #include "list.h"
 
 static List_t tasks;
-pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t olock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t olock = PTHREAD_MUTEX_INITIALIZER;
 /*
 create a media repack task
 */

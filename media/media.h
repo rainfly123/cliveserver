@@ -49,25 +49,25 @@ typedef struct {
 /*
 create a media repack task
 */
-sMeida * clive_media_create(int pack_type);
+sMedia * clive_media_create(int pack_type);
 
 /*
    DO NOT call it manually,
    chanel core will cat it automaticly
 */
-int clive_media_start(sMeida *media);
+int clive_media_start(sMedia *media);
 
 /*
    stop the media repacking task
 */
-int clive_media_stop(sMeida *media);
+int clive_media_stop(sMedia *media);
 
 /*
    release the media
 */
-int clive_media_release(sMeida *media);
+int clive_media_release(sMedia *media);
 
-int clive_media_add_output(sMeida *media, struct kfifo *buffer);
+int clive_media_add_output(sMedia *media, struct kfifo *buffer);
 /*
   start the repacking task thread
 */

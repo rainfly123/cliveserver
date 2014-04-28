@@ -18,20 +18,24 @@
   * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
   *
   */
+#include <pthread.h>
+#include <errno.h>
 #include "tcp.h"
 #include "log.h"
 #include "util.h"
 #include "event.h"
-#include "list.h""
+#include "list.h"
 #include "http.h"
 #include "core.h"
 #include "kfifo.h"
 #include "channel.h"
 
-
+/*global definition*/
 const char * flv_head = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Type: video/x-flv\r\nServer: cliveserver/0.1\r\n\r\n";
 const char *ts_head = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Type: video/MP2T\r\nServer: cliveserver/0.1\r\n\r\n";
 const char *error_head = "HTTP/1.1 404 NOT FOUND\r\nContent-Type:text/html\r\nContent-Length:56\r\nConnection:Keep-Alive\r\n\r\n<html><body><center>404 Not Found</center></body></html>";
+#define HTTP_PORT 80
+
 
 struct http {
     struct con connection;
@@ -39,25 +43,19 @@ struct http {
     uint32_t rlen;
 };
 
-
 typedef struct http_task {
     List_t clients; //the clients watching the same channel
     struct kfifo *buffer; //the channels data ()
 }HTTP_Task;
 
-static List_t channels;  //store all channel name 
+static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+static List_t channels;  //store all channel which http client watching
 
-#define INTERVAL 1000
 static void conn_close(struct con * conn)
 {
     ASSERT(conn != NULL);
-    struct http * http = (struct http *) conn->ctx;
     close(conn->skt);
     conn->done = true;
-    //relase memeory
-    ///releae tiemr
-  /*************************************/
-   //SIGNAL CLOSE
 }
 
 static int conn_recv(struct con *conn)
@@ -165,12 +163,13 @@ static void * Entry(void *p)
     }while(1);
 }
 
-static void * event_Entry(void *p)
+static void * Event_Entry(void *p)
 {
     struct event_base *evb;
+    struct http *http;
     int nsd;
-
     evb  = event_base_create(EVENT_SIZE, &clive_core_core);
+    http = clive_http_server_new(evb, HTTP_PORT);
 
     while (1) {
         nsd = event_wait(evb, 300);
@@ -179,7 +178,7 @@ static void * event_Entry(void *p)
         }
         if (nsd < 0) {
             log_debug(LOG_INFO, "wait error");
-            return nsd;
+            return (void *)0;
         }
     }
 }
@@ -197,7 +196,7 @@ int clive_http_server_start(void)
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
     val = pthread_create(&tid, &attr, Entry, NULL);
-    val += pthread_create(&tid, &attr, event_Entry, NULL);
+    val += pthread_create(&tid, &attr, Event_Entry, NULL);
     return val;
 }
 
@@ -206,4 +205,9 @@ int clive_http_server_stop(void)
 {
 }
 
+#ifdef TEST
+int main(int argc, char **argv)
+{
+}
+#endif
 

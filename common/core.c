@@ -23,8 +23,6 @@
 #include "event.h"
 #include "log.h"
 #include "timer.h"
-#include "http.h"
-#include "media.h"
 
 static int clive_core_close(struct con *conn)
 {
