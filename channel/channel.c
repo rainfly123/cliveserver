@@ -35,6 +35,15 @@ static const char *protocol[4] = {
     "http://", 
     "rtmp://"
 };
+/*
+@brief just inited the list , which contains all of the channels
+*/
+void clive_init_channel(void)
+{
+    all_channels.count = 0;
+    all_channels.head = NULL;
+    all_channels.tail = NULL;
+}
 
 /*
 *@brief  create a new channel

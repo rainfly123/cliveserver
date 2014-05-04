@@ -59,6 +59,8 @@ typedef struct {
  
 }Channel;
 
+void clive_init_channel(void);
+
 Channel *clive_new_channel(struct event_base *evb, char *url, char *name);
 
 int clive_channel_add_output(Channel * channel, char *url);

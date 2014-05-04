@@ -39,6 +39,10 @@ const char *error_head = "HTTP/1.1 404 NOT FOUND\r\nContent-Type:text/html\r\nCo
 
 struct http {
     struct con connection;
+};
+
+struct http_client {
+    struct con connection;
     uint8_t  rbuffer[512];
     uint32_t rlen;
 };
@@ -49,7 +53,7 @@ typedef struct http_task {
 }HTTP_Task;
 
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-static List_t channels;  //store all channel which http client watching
+static List_t channels;  //store all channel, in the form of http task 
 
 static void conn_close(struct con * conn)
 {
@@ -61,21 +65,45 @@ static void conn_close(struct con * conn)
 static int conn_recv(struct con *conn)
 {
     ssize_t n;
+    char *channel_name;
+    char *token;
+    char *slash;
+    int media_type = FLV;
 
     ASSERT(conn != NULL);
-    struct http * http = (struct http *) conn->ctx;
+    struct http_client * http = (struct http_client *) conn->ctx;
 
     for (;;) {
         n = clive_read(conn->skt, (http->rbuffer + http->rlen),\
                    (sizeof(http->rbuffer) - http->rlen));
-        log_debug(LOG_VERB, "recv on sd %d %zd %s ", conn->skt, n, http->rbuffer);
         if (n > 0) {
+            //parse channel name
             http->rlen += (uint32_t)n;
-            log_debug(LOG_VERB, "recv on sd return  ");
-            if (http->rlen == sizeof(http->rbuffer)) {
-                memset(http->rbuffer, 0, sizeof(http->rbuffer));
-                http->rlen = 0;
+            token = strstr(http->rbuffer, "\r\n");
+            if (token != NULL) {
+                //got one line
+                slash = strchr(http->rbuffer, '/');
+                if (slash == NULL)
+                    return CL_ERROR;
+                slash++;
+                channel_name = slash;
+                do {
+                    if (*slash == ' '){
+                        *slash = '\0';
+                        break;
+                    }
+                }while(*slash++ != '\r');
+                if (strstr(channel_name, "_ts") != NULL)
+                    media_type = TS;
+                log_debug(LOG_VERB, "channel name:%s", channel_name);
             }
+            //find specific channel
+
+            //add a output
+            if (media_type == FLV)
+                send(conn->skt, flv_head, strlen(flv_head), 0);
+            else
+                send(conn->skt, ts_head, strlen(flv_head), 0);
             return CL_OK;
         }
 
@@ -106,6 +134,43 @@ static int conn_send(struct con *conn)
 {
 }
 
+static void http_close(struct con * conn)
+{
+    ASSERT(conn != NULL);
+    close(conn->skt);
+    conn->done = true;
+}
+
+static int http_recv(struct con * conn)
+{
+    ASSERT(conn != NULL);
+    int client;
+    struct sockaddr_in from;
+    uint32_t  slen = sizeof(from);
+    struct http_client *new;
+    struct event_base *evb = conn->evb;
+
+    client = accept(conn->skt, (struct sockaddr *)&from, &slen);
+    if (client > 0) {
+        clive_set_nonblocking(client);
+        clive_set_sndbuf(client, 512*1024);
+        new = clive_calloc(1, sizeof(struct http_client));
+        new->connection.skt = client;
+        new->connection.type = tHTTP;
+        new->connection.evb = evb;
+        new->connection.ctx = new;
+
+        new->connection.recv = &conn_recv;
+        new->connection.close = &conn_close;
+        event_add_conn(evb, &new->connection);
+        event_del_out(evb, &new->connection);
+    }
+    return CL_OK;
+}
+
+
+
+
 
 /*
 http://192.168.1.13:80803/onlive
@@ -121,6 +186,7 @@ struct http * clive_http_server_new(struct event_base *evb, int port)
    
 
     skt = clive_tcp_socket();
+    clive_set_reuseaddr(skt);
     clive_set_nonblocking(skt);
     clive_set_sndbuf(skt, 64*1024);
     clive_set_rcvbuf(skt, 64*1024);
@@ -131,12 +197,13 @@ struct http * clive_http_server_new(struct event_base *evb, int port)
     http->connection.skt = skt;
     http->connection.type = tHTTP;
     http->connection.evb = evb;
-    http->connection.send = &conn_send;
-    http->connection.recv = &conn_recv;
-    http->connection.close = &conn_close;
+    //http->connection.send = &http_send;
+    http->connection.recv = &http_recv;
+    http->connection.close = &http_close;
     http->connection.ctx = http;
     
     event_add_conn(evb, &http->connection);
+    event_del_out(evb, &http->connection);
 
     return http;
 }
