@@ -21,6 +21,7 @@
 #ifndef _CLIVE_MEDIA_H_
 #define _CLIVE_MEDIA_H_
 
+#include <pthread.h>
 #include "kfifo.h"
 #include "list.h"
 
@@ -34,6 +35,11 @@ enum Pack_Type {
 
 typedef struct {
     int pack_type; 
+
+    int input_media_type;
+
+    /*protect output_pads*/
+    pthread_mutex_t olock;
 
     /*write out to the ouput_buffers*/
     List_t output_pads; 
@@ -49,13 +55,14 @@ typedef struct {
 /*
 create a media repack task
 */
-sMedia * clive_media_create(int pack_type);
+sMedia * clive_media_create(int pack_type, int input_media_type);
 
 /*
    DO NOT call it manually,
    chanel core will cat it automaticly
 */
-int clive_media_start(sMedia *media);
+int clive_media_attach(sMedia *flv_media, sMedia *ts_media,
+                      struct kfifo *buffer);
 
 /*
    stop the media repacking task

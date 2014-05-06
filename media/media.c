@@ -9,44 +9,47 @@
 
 static List_t tasks;
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t olock = PTHREAD_MUTEX_INITIALIZER;
 /*
 create a media repack task
 */
-sMeida * clive_media_create(int pack_type)
+sMedia * clive_media_create(int pack_type, int input_media_type)
 {
-    sMeida *temp;
-    ASSERT(in_buffer != NULL);
+    sMedia *temp;
 
-    temp = clive_calloc(1, sizeof(sMeida));
+    temp = clive_calloc(1, sizeof(sMedia));
     ASSERT(temp != NULL);
     temp->pack_type = pack_type;
+    temp->input_media_type = input_media_type;
+    temp->output_pads.count = 0;
+    temp->output_pads.head = NULL;
+    temp->output_pads.tail = NULL;
+    pthread_mutex_init(&temp->olock, NULL);
     return temp;
 }
 
 
-int clive_media_add_output(sMeida *media, struct kfifo *buffer)
+int clive_media_add_output(sMedia *media, struct kfifo *buffer)
 {
     bool val;
-    ASSERT(meida != NULL);
+    ASSERT(media != NULL);
 
-    pthread_mutex_lock(&olock);
+    pthread_mutex_lock(&media->olock);
     val = ListAdd(&media->output_pads, buffer);
-    pthread_mutex_unlock(&olock);
+    pthread_mutex_unlock(&media->olock);
     return val ? 1 : 0;
 }
 
 /*
    stop the media repacking task
 */
-int clive_media_stop(sMeida *media)
+int clive_media_stop(sMedia *media)
 {
 }
 
 /*
    release the media
 */
-int clive_media_release(sMeida *media)
+int clive_media_release(sMedia *media)
 {
 }
 
@@ -59,7 +62,7 @@ typedef struct {
    DO NOT call it manually,
    chanel core will cat it automaticly
 */
-int clive_media_start(sMeida *flv_media, sMeida *ts_media,\
+int clive_media_attach(sMedia *flv_media, sMedia *ts_media,\
                       struct kfifo *buffer)
 {
    Task * temp  = clive_calloc(1, sizeof(Task));
@@ -90,6 +93,7 @@ static void * Entry(void *p)
         }
         task = current->data;
         //do something
+        //read from buffer, write to flv_media and ts_media
 
         pthread_mutex_lock(&lock);
         current = current ? current->next : NULL;
