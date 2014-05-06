@@ -50,11 +50,81 @@ struct http_client {
 typedef struct http_task {
     List_t clients; //the clients watching the same channel
     struct kfifo *buffer; //the channels data ()
-    char channel_name[64]; //channel name with _ts or _flv suffix
+    char channel_name[48]; //channel name with _ts or _flv suffix
 }HTTP_Task;
 
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static List_t channels;  //store all channel, in the form of http task 
+
+static void http_add_task(char *name)
+{
+    HTTP_Task *task = clive_calloc(1, sizeof(HTTP_Task));
+    strcpy(task->channel_name, name);
+    task->buffer = kfifo_alloc(128 * 1024);
+}
+
+static void http_add_client(char *name, int fd)
+{
+    ListIterator_t iterator;
+    HTTP_Task *p;
+    int * data = clive_calloc(1, sizeof(int));
+    *data = fd;
+
+    ListIterator_Init(iterator, channels); 
+    for ( ; ListIterator_MoreEntries(iterator); ListIterator_Next(iterator))
+    {
+        p = ListIterator_Current(iterator);
+        val = strncmp(p->channel_name, name, strlen(p->channel_name));
+        if (val == 0) {
+            ListAdd(&p->clients, data);
+            return true;
+        }
+    }
+}
+
+static bool http_task_is_existed(const char *name)
+{
+    ListIterator_t iterator;
+    HTTP_Task *p;
+    int val;
+
+    if (name == NULL) {
+        return false;
+    }
+
+    ListIterator_Init(iterator, channels); 
+
+    for ( ; ListIterator_MoreEntries(iterator); ListIterator_Next(iterator))
+    {
+        p = ListIterator_Current(iterator);
+        val = strncmp(p->channel_name, name, strlen(p->channel_name));
+        if (val == 0)
+            return true;
+    }
+    return false;
+}
+
+static HTTP_Task * http_task_find(const char *name)
+{
+    ListIterator_t iterator;
+    HTTP_Task *p;
+    int val;
+
+    if (name == NULL) {
+        return false;
+    }
+
+    ListIterator_Init(iterator, channels); 
+
+    for ( ; ListIterator_MoreEntries(iterator); ListIterator_Next(iterator))
+    {
+        p = ListIterator_Current(iterator);
+        val = strncmp(p->channel_name, name, strlen(p->channel_name));
+        if (val == 0)
+            return p;
+    }
+    return NULL;
+}
 
 static void conn_close(struct con * conn)
 {
@@ -99,8 +169,27 @@ static int conn_recv(struct con *conn)
                 log_debug(LOG_VERB, "channel name:%s", channel_name);
             }
             //find specific channel
+            if (clive_channel_is_existed(channel_name) == false) {
+                send(conn->skt, error_head, strlen(flv_head), 0);
+                return CL_CLOSE;
+            }
 
             //add a output
+            if (http_task_is_existed(channel_name)) {
+                http_add_client(channel_name, conn->skt);
+            }
+            else {
+                http_add_task(channel_name);
+            }
+            HTTP_Task *task_temp = http_task_find(channel_name);
+            Channel *temp = clive_channel_find(channel_name);
+            if ((temp != NULL) && (task_temp != NULL)) {
+                if (media_type == FLV)
+                    clive_media_add_output(temp->flv_media, task_temp->buffer);
+                else
+                    clive_media_add_output(temp->ts_media, task_temp->buffer);
+            }
+
             if (media_type == FLV)
                 send(conn->skt, flv_head, strlen(flv_head), 0);
             else

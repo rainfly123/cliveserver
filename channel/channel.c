@@ -243,3 +243,47 @@ int clive_channel_add_output(Channel * channel, char *url)
     log_error("clive_channel_add_output: unsupported output protocol");
     return -1;
 }
+
+bool clive_channel_is_existed(const char *name)
+{
+    ListIterator_t iterator;
+    Channel *p;
+    int val;
+
+    if (name == NULL) {
+        return false;
+    }
+
+    ListIterator_Init(iterator, all_channels); 
+
+    for ( ; ListIterator_MoreEntries(iterator); ListIterator_Next(iterator))
+    {
+        p = ListIterator_Current(iterator);
+        val = strncmp(p->channel_name, name, strlen(p->channel_name));
+        if (val == 0)
+            return true;
+    }
+    return false;
+}
+
+Channel * clive_channel_find(const char *name)
+{
+    ListIterator_t iterator;
+    Channel *p;
+    int val;
+
+    if (name == NULL) {
+        return false;
+    }
+
+    ListIterator_Init(iterator, all_channels); 
+
+    for ( ; ListIterator_MoreEntries(iterator); ListIterator_Next(iterator))
+    {
+        p = ListIterator_Current(iterator);
+        val = strncmp(p->channel_name, name, strlen(p->channel_name));
+        if (val == 0)
+            return p;
+    }
+    return NULL;
+}
