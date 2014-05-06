@@ -130,7 +130,7 @@ static int listener_recv(struct con * conn)
 *        NULL for failed
 */
 
-Channel * clive_new_channel(struct event_base *evb, char *url)
+Channel * clive_new_channel(struct event_base *evb, char *url, char *name)
 {
     Channel *channel;
     int val;
@@ -288,26 +288,26 @@ int clive_channel_add_output(Channel * channel, char *url)
    
     protocol = strstr(url, "_flv");
     if (protocol != NULL) {
-        channel->flv_media =  clive_media_create(Unknown, channel->buffer);
+        channel->flv_media =  clive_media_create(Unknown, channel->input_media_type);
         return 0;
     }
     else {
          protocol = strstr(url, "rtmp:");
          if (protocol != NULL) {
-             channel->flv_media =  clive_media_create(Unknown, channel->buffer);
+             channel->flv_media =  clive_media_create(Unknown, channel->input_media_type);
              return 0;
          }
     }
 
     protocol = strstr(url, "_ts");
     if (protocol != NULL) {
-        channel->ts_media =  clive_media_create(Unknown, channel->buffer);
+        channel->ts_media =  clive_media_create(Unknown, channel->input_media_type);
         return 0;
     }
     else {
          protocol = strstr(url, ".m3u8");
          if (protocol != NULL) {
-             channel->ts_media =  clive_media_create(Unknown, channel->buffer);
+             channel->ts_media =  clive_media_create(Unknown, channel->input_media_type);
              return 0;
          }
     }
