@@ -45,6 +45,41 @@ void clive_init_channel(void)
     all_channels.tail = NULL;
 }
 
+static void listener_close(struct con * conn)
+{
+    ASSERT(conn != NULL);
+    close(conn->skt);
+    conn->done = true;
+}
+
+static int listener_recv(struct con * conn)
+{
+    ASSERT(conn != NULL);
+    int client;
+    struct sockaddr_in from;
+    uint32_t  slen = sizeof(from);
+    struct http_client *new;
+    struct event_base *evb = conn->evb;
+
+    client = accept(conn->skt, (struct sockaddr *)&from, &slen);
+    if (client > 0) {
+        clive_set_nonblocking(client);
+        clive_set_sndbuf(client, 512*1024);
+        new = clive_calloc(1, sizeof(struct http_client));
+        new->connection.skt = client;
+        new->connection.type = tHTTP;
+        new->connection.evb = evb;
+        new->connection.ctx = new;
+
+        new->connection.recv = &conn_recv;
+        new->connection.close = &conn_close;
+        event_add_conn(evb, &new->connection);
+        event_del_out(evb, &new->connection);
+    }
+    return CL_OK;
+}
+
+
 /*
 *@brief  create a new channel
 *@param evb a pointer to event_base, which this channel will run in
@@ -152,9 +187,9 @@ Channel * clive_new_channel(struct event_base *evb, char *url)
     channel->input_media_type = -1;
     channel->evb = evb;
     channel->connection.skt = skt;
-    channel->connection.send = &conn_send;
-    channel->connection.recv = &conn_recv;
-    channel->connection.close = &conn_close;
+    //channel->connection.send = &conn_send;
+    channel->connection.recv = &listener_recv;
+    channel->connection.close = &listener_close;
     channel->connection.ctx = channel;
     log_debug(LOG_INFO, "clive_new_channel ip:%s port:%d location:%s", ip_addr, sport, loc);
 
