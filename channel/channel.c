@@ -19,6 +19,7 @@
   *
   */
 #include <string.h>
+#include <errno.h>
 #include "channel.h"
 #include "util.h"
 #include "log.h"
@@ -45,6 +46,42 @@ void clive_init_channel(void)
     all_channels.tail = NULL;
 }
 
+static void net_close(struct con * conn)
+{
+    ASSERT(conn != NULL);
+    close(conn->skt);
+    clive_free(conn);
+}
+
+static int net_recv(struct con *conn)
+{
+    ssize_t n;
+
+    ASSERT(conn != NULL);
+
+    for (;;) {
+        //////////////////////////
+           //recv...
+        if (n > 0) {
+            return CL_OK;
+        }
+
+        if (n == 0) {
+            return CL_CLOSE;
+        }
+
+        if (errno == EINTR) {
+            continue;
+        } else if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            return CL_OK;
+        } else {
+            conn->err = errno;
+            log_error("recv on %d failed: %s", conn->skt, strerror(errno));
+            return CL_ERROR;
+        }
+    }
+}
+
 static void listener_close(struct con * conn)
 {
     ASSERT(conn != NULL);
@@ -58,23 +95,23 @@ static int listener_recv(struct con * conn)
     int client;
     struct sockaddr_in from;
     uint32_t  slen = sizeof(from);
-    struct http_client *new;
+    struct con *new;
     struct event_base *evb = conn->evb;
 
     client = accept(conn->skt, (struct sockaddr *)&from, &slen);
     if (client > 0) {
         clive_set_nonblocking(client);
         clive_set_sndbuf(client, 512*1024);
-        new = clive_calloc(1, sizeof(struct http_client));
-        new->connection.skt = client;
-        new->connection.type = tHTTP;
-        new->connection.evb = evb;
-        new->connection.ctx = new;
+        new = clive_calloc(1, sizeof(struct con));
+        new->skt = client;
+        new->type = tHTTP;
+        new->evb = evb;
+        new->ctx = conn->ctx;//pointer channel
 
-        new->connection.recv = &conn_recv;
-        new->connection.close = &conn_close;
-        event_add_conn(evb, &new->connection);
-        event_del_out(evb, &new->connection);
+        new->recv = &net_recv;
+        new->close = &net_close;
+        event_add_conn(evb, new);
+        event_del_out(evb, new);
     }
     return CL_OK;
 }
@@ -228,7 +265,7 @@ int clive_channel_start(Channel * channel)
 int clive_channel_stop(Channel *channel)
 {
     ASSERT(channel != NULL);
-    return event_del_conn(evb, &timer->connection);
+    return event_del_conn(channel->evb, &channel->connection);
 }
 
 /*
