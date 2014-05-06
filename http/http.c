@@ -50,6 +50,7 @@ struct http_client {
 typedef struct http_task {
     List_t clients; //the clients watching the same channel
     struct kfifo *buffer; //the channels data ()
+    char channel_name[64]; //channel name with _ts or _flv suffix
 }HTTP_Task;
 
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
