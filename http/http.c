@@ -29,6 +29,7 @@
 #include "core.h"
 #include "kfifo.h"
 #include "channel.h"
+#include "media.h"
 
 /*global definition*/
 const char * flv_head = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Type: video/x-flv\r\nServer: cliveserver/0.1\r\n\r\n";
@@ -69,15 +70,15 @@ static void http_add_client(char *name, int fd)
     HTTP_Task *p;
     int * data = clive_calloc(1, sizeof(int));
     *data = fd;
+    int val;
 
-    ListIterator_Init(iterator, channels); 
+    ListIterator_Init(iterator, &channels); 
     for ( ; ListIterator_MoreEntries(iterator); ListIterator_Next(iterator))
     {
         p = ListIterator_Current(iterator);
         val = strncmp(p->channel_name, name, strlen(p->channel_name));
         if (val == 0) {
             ListAdd(&p->clients, data);
-            return true;
         }
     }
 }
@@ -92,7 +93,7 @@ static bool http_task_is_existed(const char *name)
         return false;
     }
 
-    ListIterator_Init(iterator, channels); 
+    ListIterator_Init(iterator, &channels); 
 
     for ( ; ListIterator_MoreEntries(iterator); ListIterator_Next(iterator))
     {
@@ -114,7 +115,7 @@ static HTTP_Task * http_task_find(const char *name)
         return false;
     }
 
-    ListIterator_Init(iterator, channels); 
+    ListIterator_Init(iterator, &channels); 
 
     for ( ; ListIterator_MoreEntries(iterator); ListIterator_Next(iterator))
     {

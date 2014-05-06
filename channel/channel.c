@@ -254,7 +254,7 @@ bool clive_channel_is_existed(const char *name)
         return false;
     }
 
-    ListIterator_Init(iterator, all_channels); 
+    ListIterator_Init(iterator, &all_channels); 
 
     for ( ; ListIterator_MoreEntries(iterator); ListIterator_Next(iterator))
     {
@@ -276,7 +276,7 @@ Channel * clive_channel_find(const char *name)
         return false;
     }
 
-    ListIterator_Init(iterator, all_channels); 
+    ListIterator_Init(iterator, &all_channels); 
 
     for ( ; ListIterator_MoreEntries(iterator); ListIterator_Next(iterator))
     {
