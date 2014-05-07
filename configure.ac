@@ -6,6 +6,9 @@ AC_INIT([cliveserver], [0.0.1], [xiechc@gmail.com])
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
 
+# Initialize automake
+AM_INIT_AUTOMAKE([foreign])
+
 # Checks for programs.
 AC_PROG_CC
 
@@ -30,5 +33,11 @@ AC_TYPE_UINT8_T
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([clock_gettime gethostname gettimeofday memset select socket strchr strerror strstr])
+AC_CHECK_LIB([pthread], [pthread_create], [], [echo "don't have pthread" exit -1])
 
+AC_CONFIG_FILES([Makefile
+                 src/Makefile
+                 src/media/Makefile
+                 src/http/Makefile
+                 src/channel/Makefile])
 AC_OUTPUT
