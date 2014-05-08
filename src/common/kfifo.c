@@ -1,6 +1,6 @@
 #include "util.h"
 #include "kfifo.h"
-
+#define min(X,Y) ((X) < (Y) ? (X) : (Y))
  struct kfifo *kfifo_alloc(unsigned int size)
  {
      uint8_t *buffer;

@@ -34,10 +34,9 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([clock_gettime gethostname gettimeofday memset select socket strchr strerror strstr])
 AC_CHECK_LIB([pthread], [pthread_create], [], [echo "don't have pthread" exit -1])
+AC_CHECK_LIB([rt], [clock_gettime], [], [echo "don't have rt" exit -1])
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile
-                 src/media/Makefile
-                 src/http/Makefile
-                 src/channel/Makefile])
+                 ])
 AC_OUTPUT

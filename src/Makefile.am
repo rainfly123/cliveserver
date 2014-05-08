@@ -1,9 +1,6 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-AM_CPPFLAGS =
-if !OS_SOLARIS
-AM_CPPFLAGS += -D_GNU_SOURCE
-endif
+AM_CPPFLAGS = -D_GNU_SOURCE
 AM_CPPFLAGS += -I $(top_srcdir)/src/common
 AM_CPPFLAGS += -I $(top_srcdir)/src/media
 AM_CPPFLAGS += -I $(top_srcdir)/src/channel
@@ -19,11 +16,8 @@ AM_CFLAGS += -Wconversion -Wsign-compare
 AM_CFLAGS += -Wstrict-prototypes -Wmissing-prototypes -Wredundant-decls -Wmissing-declarations
 
 AM_LDFLAGS =
-AM_LDFLAGS += -lm -lpthread -rdynamic
-if OS_SOLARIS
-AM_LDFLAGS += -lnsl -lsocket
-endif
-
+#AM_LDFLAGS += -lrt -lpthread -rdynamic
+#cliveserver_LDADD = 
 
 sbin_PROGRAMS = cliveserver
 
@@ -35,7 +29,7 @@ cliveserver_SOURCES =  \
             common/list.c \
             common/log.c \
             common/tcp.c  \
-            common/timer.c \ 
+            common/timer.c \
             common/udp.c \
             common/util.c \
             media/ts2ts.c \
