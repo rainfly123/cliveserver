@@ -1,5 +1,5 @@
 #!/bin/sh 
 autoreconf
-automake --add-misssing
+automake --add-missing
 ./configure
 make
