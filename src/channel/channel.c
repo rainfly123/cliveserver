@@ -48,14 +48,49 @@ void clive_init_channel(void)
     all_channels.tail = NULL;
 }
 
-static void net_close(struct con * conn)
+static void udp_close(struct con * conn)
+{
+    ASSERT(conn != NULL);
+    close(conn->skt);
+    conn->done = true;
+}
+static int udp_recv(struct con *conn)
+{
+    ssize_t n = 0;
+
+    ASSERT(conn != NULL);
+    printf("recv data udp\n");
+    for (;;) {
+        //////////////////////////
+           //recv...
+        if (n > 0) {
+            return CL_OK;
+        }
+
+        if (n == 0) {
+            return CL_CLOSE;
+        }
+
+        if (errno == EINTR) {
+            continue;
+        } else if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            return CL_OK;
+        } else {
+            conn->err = errno;
+            log_error("recv on %d failed: %s", conn->skt, strerror(errno));
+            return CL_ERROR;
+        }
+    }
+}
+
+static void tcp_close(struct con * conn)
 {
     ASSERT(conn != NULL);
     close(conn->skt);
     clive_free(conn);
 }
 
-static int net_recv(struct con *conn)
+static int tcp_recv(struct con *conn)
 {
     ssize_t n;
 
@@ -110,8 +145,8 @@ static int listener_recv(struct con * conn)
         new->evb = evb;
         new->ctx = conn->ctx;//pointer channel
 
-        new->recv = &net_recv;
-        new->close = &net_close;
+        new->recv = &tcp_recv;
+        new->close = &tcp_close;
         event_add_conn(evb, new);
         event_del_out(evb, new);
     }
@@ -210,6 +245,8 @@ Channel * clive_new_channel(struct event_base *evb, char *url, char *name)
         clive_set_rcvbuf(skt, 64*1024);
         clive_tcp_bind(skt, ip_addr, sport);
         clive_tcp_listen(skt, 3);
+        channel->connection.recv = &listener_recv;
+        channel->connection.close = &listener_close;
     }
     if (input_protocol == UDP) {
         skt = clive_udp_socket();
@@ -217,6 +254,8 @@ Channel * clive_new_channel(struct event_base *evb, char *url, char *name)
         clive_set_sndbuf(skt, 64*1024);
         clive_set_rcvbuf(skt, 64*1024);
         clive_udp_bind(skt, ip_addr, sport);
+        channel->connection.recv = &udp_recv;
+        channel->connection.close = &udp_close;
     }
     if (input_protocol == HTTP) {
        //.....
@@ -226,9 +265,8 @@ Channel * clive_new_channel(struct event_base *evb, char *url, char *name)
     channel->input_media_type = -1;
     channel->evb = evb;
     channel->connection.skt = skt;
+    channel->connection.evb = evb;
     //channel->connection.send = &conn_send;
-    channel->connection.recv = &listener_recv;
-    channel->connection.close = &listener_close;
     channel->connection.ctx = channel;
     log_debug(LOG_INFO, "clive_new_channel ip:%s port:%d location:%s", ip_addr, sport, location);
 

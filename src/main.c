@@ -180,12 +180,22 @@ int main(int argc, char **argv)
                     for (k = 0; k < temp.output_total; k++) {
                         clive_channel_add_output(channel, temp.outputs[k]);
                     }
+                    clive_channel_start(channel);
                     clive_channel_add(channel);
                 }
                 state = KEY;
         }
     }
-    while (1)
-       sleep(100);
+    while (1) {
+        int nsd;
+        nsd = event_wait(evb, 500);
+        if (nsd == 0) {
+            log_debug(LOG_INFO, "wait return %d", nsd);
+        }
+        if (nsd < 0) {
+            log_debug(LOG_INFO, "wait error");
+            return (void *)0;
+        }
+    }
     return 0;
 }
