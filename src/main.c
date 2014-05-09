@@ -9,7 +9,7 @@
 #include "jsmn.h"
 
 
-char * KEYS[] = {"channels", "channel_name", "input_url", "output"};
+char * KEYS[] = {"channel_name", "input_url", "output"};
 
 static bool json_token_streq(char *js, jsmntok_t *t, char *s)
 {
@@ -89,8 +89,8 @@ int main(int argc, char **argv)
     typedef enum { START, KEY, PRINT, SKIP} parse_state;
     parse_state state = START;
 
-    int object_tokens = 0;
     int i = 0, j = 1;
+    char *value;
     for (; j > 0; i++, j--)
     {
         jsmntok_t *t = &tokens[i];
@@ -98,7 +98,6 @@ int main(int argc, char **argv)
             return -1;
         if (t->type == JSMN_ARRAY || t->type == JSMN_OBJECT)
             j += t->size;
-
         switch (state)
         {
             case START:
@@ -106,18 +105,12 @@ int main(int argc, char **argv)
                     return -1;
                 }
                 state = KEY;
-                object_tokens = t->size;
-
-                if (object_tokens == 0)
-                    break;
-                if (object_tokens % 2 != 0)
-                    break;
 
             case KEY:
-                object_tokens--;
 
-                if (t->type != JSMN_STRING)
+                if (t->type != JSMN_PRIMITIVE) {
                     break;
+                }
                 state = SKIP;
                 size_t m;
                 for (m = 0; m < sizeof(KEYS)/sizeof(char *); m++)
@@ -132,27 +125,14 @@ int main(int argc, char **argv)
                 break;
 
             case SKIP:
-                if (t->type != JSMN_STRING && t->type != JSMN_PRIMITIVE)
-                    log_error("Invalid response: object values must be strings or primitives.");
-
-                object_tokens--;
                 state = KEY;
-
-                if (object_tokens == 0)
-                    break;
+                break;
 
             case PRINT:
-                if (t->type != JSMN_STRING && t->type != JSMN_PRIMITIVE)
-                    log_error("Invalid response: object values must be strings or primitives.");
-
-                char *str = json_token_tostr(buffer, t);
-                puts(str);
-
-                object_tokens--;
+                value = json_token_tostr(buffer, t);
+                printf("%s\n", value);
                 state = KEY;
 
-                if (object_tokens == 0)
-                    break;
 
         }
     }
