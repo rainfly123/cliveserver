@@ -24,6 +24,8 @@
 #include "util.h"
 #include "log.h"
 #include "kfifo.h"
+#include "udp.h"
+#include "tcp.h"
 #include "list.h"
 #include "media.h"
 
@@ -139,10 +141,10 @@ Channel * clive_new_channel(struct event_base *evb, char *url, char *name)
     char *ip;
     char *loc;
     char ip_addr[64];
-    int sport = 80;
+    uint16_t sport = 80;
     char location[32];
     int input_protocol = -1;
-    int i = 0;
+    size_t i = 0;
     struct sockinfo sock;
     int skt;
 
@@ -358,4 +360,12 @@ Channel * clive_channel_find(const char *name)
             return p;
     }
     return NULL;
+}
+
+bool clive_channel_add(Channel *channel) {
+
+    if (channel == NULL) {
+        return false;
+    }
+    return ListAdd(&all_channels, channel);
 }

@@ -8,6 +8,7 @@
 #include "http.h"
 #include "jsmn.h"
 #include "event.h"
+#include "core.h"
 
 
 char * KEYS[] = {"channel_name", "input_url", "output"};
@@ -90,7 +91,7 @@ int main(int argc, char **argv)
     Channel *channel;
     int i = 0, j = 1, k = 0;
     char *value;
-    CfgStore temp = {NULL, NULL, NULL, 0};
+    CfgStore temp;
     size_t m;
     int comma;
 
@@ -132,7 +133,6 @@ int main(int argc, char **argv)
                 {
                     if (json_token_streq(buffer, t, KEYS[m]))
                     {
-                        printf("%s: ", KEYS[m]);
                         state = PRINT;
                         break;
                     }
@@ -145,14 +145,14 @@ int main(int argc, char **argv)
 
             case PRINT:
                 value = json_token_tostr(buffer, t);
-                printf("%s\n", value);
-                if (m == 1) {
+                if (m == 0) {
+                    memset(&temp, 0, sizeof(temp));
                     temp.channel_name = value;
-                }else if (m == 2) {
+                }else if (m == 1) {
                     temp.input_url = value;
                 } else {
                     temp.output_total = t->size;
-                    k = temp.output_total;
+                    k = 0;
                     comma = t->start;
                     for (; k < temp.output_total; k++) {
                         do {
@@ -168,7 +168,18 @@ int main(int argc, char **argv)
                         }while( buffer[comma] != '\0');
                         buffer[comma] = '\0';
                     }
-                    
+                    log_debug(LOG_INFO, "add channel:");
+                    log_debug(LOG_INFO, "    channel_name: %s", temp.channel_name);
+                    log_debug(LOG_INFO, "    input_url: %s", temp.input_url);
+                    log_debug(LOG_INFO, "    outputs: ");
+                    for (k = 0; k < temp.output_total; k++) {
+                        log_debug(LOG_INFO, "        %s", temp.outputs[k]);
+                    }
+                    channel = clive_new_channel(evb, temp.input_url, temp.channel_name);
+                    for (k = 0; k < temp.output_total; k++) {
+                        clive_channel_add_output(channel, temp.outputs[k]);
+                    }
+                    clive_channel_add(channel);
                 }
                 state = KEY;
         }

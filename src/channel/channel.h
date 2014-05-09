@@ -72,4 +72,7 @@ int clive_channel_stop(Channel *channel);
 bool clive_channel_is_existed(const char *name);
 
 Channel * clive_channel_find(const char *name);
+
+bool clive_channel_add(Channel *channel);
+
 #endif
