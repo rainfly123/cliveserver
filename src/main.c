@@ -7,6 +7,7 @@
 #include "channel.h"
 #include "http.h"
 #include "jsmn.h"
+#include "event.h"
 
 
 char * KEYS[] = {"channel_name", "input_url", "output"};
@@ -72,25 +73,40 @@ static jsmntok_t * parse_cfg(char *buffer)
     return tokens;
 }
 
+#define MAX_OUTPUTS 5
+typedef struct {
+    char *channel_name;
+    char *input_url;
+    char *outputs[MAX_OUTPUTS];
+    int output_total;
+}CfgStore;
+
 int main(int argc, char **argv)
 {
     struct sigaction sa;
     jsmntok_t * tokens;
     char *buffer;
+    struct event_base *evb;
+    Channel *channel;
+    int i = 0, j = 1, k = 0;
+    char *value;
+    CfgStore temp = {NULL, NULL, NULL, 0};
+    size_t m;
+    int comma;
 
     sa.sa_handler = SIG_IGN;
     sigaction(SIGPIPE, &sa, 0 );
 
     log_init(LOG_VERB, NULL);
     log_debug(LOG_DEBUG, "cliveserver starting..");
+    clive_init_channel();
+    evb  = event_base_create(EVENT_SIZE, &clive_core_core);
     buffer = read_cfg("cliveserver.conf");
     tokens = parse_cfg(buffer);
-
+    //clive_new_channel(evb, );
     typedef enum { START, KEY, PRINT, SKIP} parse_state;
     parse_state state = START;
 
-    int i = 0, j = 1;
-    char *value;
     for (; j > 0; i++, j--)
     {
         jsmntok_t *t = &tokens[i];
@@ -112,7 +128,6 @@ int main(int argc, char **argv)
                     break;
                 }
                 state = SKIP;
-                size_t m;
                 for (m = 0; m < sizeof(KEYS)/sizeof(char *); m++)
                 {
                     if (json_token_streq(buffer, t, KEYS[m]))
@@ -131,9 +146,31 @@ int main(int argc, char **argv)
             case PRINT:
                 value = json_token_tostr(buffer, t);
                 printf("%s\n", value);
+                if (m == 1) {
+                    temp.channel_name = value;
+                }else if (m == 2) {
+                    temp.input_url = value;
+                } else {
+                    temp.output_total = t->size;
+                    k = temp.output_total;
+                    comma = t->start;
+                    for (; k < temp.output_total; k++) {
+                        do {
+                            if (buffer[comma] >= 'h')
+                                break;
+                            comma++;
+                        }while( buffer[comma] != '\0');
+                        temp.outputs[k] = &buffer[comma];
+                        do {
+                            if (buffer[comma] == '"')
+                                break;
+                            comma++;
+                        }while( buffer[comma] != '\0');
+                        buffer[comma] = '\0';
+                    }
+                    
+                }
                 state = KEY;
-
-
         }
     }
     return 0;
