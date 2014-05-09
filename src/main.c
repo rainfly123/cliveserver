@@ -184,5 +184,7 @@ int main(int argc, char **argv)
                 state = KEY;
         }
     }
+    while (1)
+       sleep(100);
     return 0;
 }

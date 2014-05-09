@@ -138,7 +138,7 @@ Channel * clive_new_channel(struct event_base *evb, char *url, char *name)
     int val;
     int status;
     char *port;
-    char *ip;
+    char *ip = url;
     char *loc;
     char ip_addr[64];
     uint16_t sport = 80;
@@ -230,7 +230,7 @@ Channel * clive_new_channel(struct event_base *evb, char *url, char *name)
     channel->connection.recv = &listener_recv;
     channel->connection.close = &listener_close;
     channel->connection.ctx = channel;
-    log_debug(LOG_INFO, "clive_new_channel ip:%s port:%d location:%s", ip_addr, sport, loc);
+    log_debug(LOG_INFO, "clive_new_channel ip:%s port:%d location:%s", ip_addr, sport, location);
 
     return channel;
 }
