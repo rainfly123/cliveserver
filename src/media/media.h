@@ -57,6 +57,7 @@ create a media repack task
 */
 sMedia * clive_media_create(int pack_type, int input_media_type);
 
+int clive_media_setype(sMedia * media, int pack_type, int input_media_type);
 /*
    DO NOT call it manually,
    chanel core will cat it automaticly

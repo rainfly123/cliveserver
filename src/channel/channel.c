@@ -56,19 +56,65 @@ static void udp_close(struct con * conn)
 }
 static int udp_recv(struct con *conn)
 {
-    ssize_t n = 0;
+    ssize_t n = 0, w = 0;
+    Channel *channel;
+    uint8_t buffer[MAX_UDP_LEN]:
+    uint32_t total;
 
     ASSERT(conn != NULL);
-    printf("recv data udp\n");
+    channel = conn->ctx;
+    if (channel->input_media_type == Unknown) { 
+        for (;;) {
+        //////////////////////////
+           //recv...
+        n = clive_udp_recv(conn->skt, NULL, NULL, &buffer, sizeof(buffer));
+        if (n > 0) {
+            if (buffer[0] == 'F') {
+                channel->input_media_type = FLV;
+                break;
+            }else {
+                channel->input_media_type = FLV;
+                break;
+            } else {
+                log_error("unsupported stream format");
+            }
+        }
+
+        if (errno == EINTR) {
+            continue;
+        } else if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            return CL_OK;
+        } else {
+            conn->err = errno;
+            log_error("recv on %d failed: %s", conn->skt, strerror(errno));
+            return CL_ERROR;
+        }
+        }
+        w = kfifo_put(channel->buffer, buffer, n); 
+        if (w < n){
+            log_error("buffer overflow");
+        }
+        clive_media_attach(channel->flv_media, channel->ts_media, channel->buffer)
+        if (channel->input_media_type == TS) {
+            clive_media_settype(channel->flv_media, TS2FLV, TS);
+            clive_media_settype(channel->ts_media, TS2TS, TS);
+        }
+        if (channel->input_media_type == FLV) {
+            clive_media_settype(channel->flv_media, FLV2FLV, FLV);
+            clive_media_settype(channel->ts_media, FLV2TS, FLV);
+        }
+    }
     for (;;) {
         //////////////////////////
            //recv...
+        n = clive_udp_recv(conn->skt, NULL, NULL, &buffer, sizeof(buffer));
         if (n > 0) {
+            total = 0;
+            do {
+                w = kfifo_put(channel->buffer, (buffer + total), (n - total)); 
+                total += w;
+            } while (total < n);
             return CL_OK;
-        }
-
-        if (n == 0) {
-            return CL_CLOSE;
         }
 
         if (errno == EINTR) {
@@ -81,6 +127,7 @@ static int udp_recv(struct con *conn)
             return CL_ERROR;
         }
     }
+
 }
 
 static void tcp_close(struct con * conn)
@@ -328,26 +375,26 @@ int clive_channel_add_output(Channel * channel, char *url)
    
     protocol = strstr(url, "_flv");
     if (protocol != NULL) {
-        channel->flv_media =  clive_media_create(Unknown, channel->input_media_type);
+        channel->flv_media =  clive_media_create(Unknown, Unknown);
         return 0;
     }
     else {
          protocol = strstr(url, "rtmp:");
          if (protocol != NULL) {
-             channel->flv_media =  clive_media_create(Unknown, channel->input_media_type);
+             channel->flv_media =  clive_media_create(Unknown, Unknown);
              return 0;
          }
     }
 
     protocol = strstr(url, "_ts");
     if (protocol != NULL) {
-        channel->ts_media =  clive_media_create(Unknown, channel->input_media_type);
+        channel->ts_media =  clive_media_create(Unknown, Unknown);
         return 0;
     }
     else {
          protocol = strstr(url, ".m3u8");
          if (protocol != NULL) {
-             channel->ts_media =  clive_media_create(Unknown, channel->input_media_type);
+             channel->ts_media =  clive_media_create(Unknown, Unknown);
              return 0;
          }
     }

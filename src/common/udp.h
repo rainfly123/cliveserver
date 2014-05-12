@@ -24,6 +24,8 @@ extern "C"
 #endif
 #include "util.h"
 
+#define MAX_UDP_LEN 1500
+
 int32_t clive_udp_socket(void);
 
 void clive_udp_close( int32_t skt );

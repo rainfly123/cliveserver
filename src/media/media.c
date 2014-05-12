@@ -116,4 +116,12 @@ int clive_task_thread_start(void)
 }
 
 
+int clive_media_setype(sMedia * media, int pack_type, int input_media_type)
+{
+    if (media != NULL) {
+        media->pack_type = pack_type;
+        media->input_media_type = input_media_type;
+    }
+    return 0;
+}
 
