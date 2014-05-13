@@ -24,6 +24,7 @@
 #include "util.h"
 #include "event.h"
 #include "timer.h"
+#include "kfifo.h"
 
 
 int clive_http_server_start(void);

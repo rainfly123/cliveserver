@@ -81,4 +81,5 @@ int clive_media_add_output(sMedia *media, struct kfifo *buffer);
 */
 int clive_media_task_thread_start(void);
 
+int clive_media_consume_data(sMedia *media, uint8_t *data, uint32_t len);
 #endif

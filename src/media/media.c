@@ -6,6 +6,7 @@
 #include "media.h"
 #include "log.h"
 #include "list.h"
+#include "ts2ts.h"
 
 static List_t tasks;
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
@@ -84,7 +85,10 @@ static void * Entry(void *p)
 {
     Task * task;
     ListEntry_t * current = NULL;
-   
+    uint8_t *buffer;
+    uint32_t len;
+    buffer = clive_calloc(1, 1024); 
+
     do {
         if (current == NULL) {
             pthread_mutex_lock(&lock);
@@ -95,6 +99,13 @@ static void * Entry(void *p)
             continue;
         }
         task = current->data;
+        if (kfifo_len(task->buffer) > 0) {
+           len = kfifo_get(task->buffer, buffer, 1024);
+           log_debug(LOG_INFO, "media task got %d data from channel's buffer", len);
+           clive_media_consume_data(task->flv_media, buffer, len);
+           clive_media_consume_data(task->ts_media, buffer, len);
+       }
+       
         //do something
         //read from buffer, write to flv_media and ts_media
 
@@ -128,3 +139,11 @@ int clive_media_setype(sMedia * media, int pack_type, int input_media_type)
     return 0;
 }
 
+int clive_media_consume_data(sMedia *media, uint8_t *data, uint32_t len)
+{
+    if (media != NULL) {
+        if (media->pack_type == TS2TS)
+            ts2ts(media, data, len);
+    }
+    //////
+}
