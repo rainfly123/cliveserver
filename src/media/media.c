@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <sched.h>
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
@@ -94,8 +95,7 @@ static void * Entry(void *p)
             pthread_mutex_lock(&lock);
             current = tasks.head ;
             pthread_mutex_unlock(&lock);
-            usleep(10 *1000);
-            log_debug(LOG_INFO, "all task done");
+            sched_yield();
             continue;
         }
         task = current->data;
@@ -143,7 +143,7 @@ int clive_media_consume_data(sMedia *media, uint8_t *data, uint32_t len)
 {
     if (media != NULL) {
         if (media->pack_type == TS2TS)
-            ts2ts(media, data, len);
+            do_pack_ts2ts(media, data, len);
     }
     //////
 }
