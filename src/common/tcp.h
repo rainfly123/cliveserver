@@ -20,7 +20,7 @@ extern "C"
  * @brief create tcp socket
  * @return socket fd if succeeded ,-1 esle
  */
-int clive_tcp_socket();
+int clive_tcp_socket(void);
 
 /** 
  * @brief close socket

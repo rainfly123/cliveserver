@@ -39,6 +39,7 @@ const char *ts_head = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Type
 const char *error_head = "HTTP/1.1 404 NOT FOUND\r\nContent-Type:text/html\r\nContent-Length:56\r\nConnection:Keep-Alive\r\n\r\n<html><body><center>404 Not Found</center></body></html>";
 #define HTTP_PORT 8080
 
+struct http * clive_http_server_new(struct event_base *evb, unsigned short port);
 
 struct http {
     struct con connection;
@@ -46,7 +47,7 @@ struct http {
 
 struct http_client {
     struct con connection;
-    uint8_t  rbuffer[512];
+    char rbuffer[512];
     uint32_t rlen;
 };
 
@@ -169,7 +170,7 @@ static int conn_recv(struct con *conn)
                 }while(*slash++ != '\r');
                 if (strstr(channel_name, "_ts") != NULL)
                     media_type = TS;
-                log_debug(LOG_VERB, "channel name:%s", channel_name);
+                log_debug(LOG_DEBUG, "channel name:%s", channel_name);
             }
             //find specific channel
             if (clive_channel_is_existed(channel_name) == false) {
@@ -262,7 +263,7 @@ static int http_recv(struct con * conn)
 /*
 http://192.168.1.13:80803/onlive
 */
-struct http * clive_http_server_new(struct event_base *evb, int port)
+struct http * clive_http_server_new(struct event_base *evb, unsigned short port)
 {
     struct http *http;
     int skt;
@@ -299,23 +300,44 @@ static void * Entry(void *p)
 {
     HTTP_Task * task;
     ListEntry_t * current = NULL;
+    uint8_t *buffer;
+    uint32_t len;
+    buffer = clive_calloc(1, 1024); 
+    ListIterator_t iterator;
+    int *skt;
+    int ret;
    
     do {
         if (current == NULL) {
             pthread_mutex_lock(&lock);
             current = channels.head ;
             pthread_mutex_unlock(&lock);
-            usleep(10 *1000);
-            //log_debug(LOG_INFO, "all task done");
+            sched_yield();
             continue;
         }
         task = current->data;
         //do something
-
+        if (kfifo_len(task->buffer) > 0) {
+           len = kfifo_get(task->buffer, buffer, 1024);
+           log_debug(LOG_INFO, "http task got %d data from its buffer", len);
+           ListIterator_Init(iterator, &task->clients); 
+           for ( ; ListIterator_MoreEntries(iterator); ListIterator_Next(iterator))
+           {
+               skt = ListIterator_Current(iterator);
+               ret = clive_write(*skt, buffer, len);
+               if ((ret < 0) && (errno != EAGAIN))
+               {
+                   close(*skt);
+                   clive_free(skt);
+                   ListRemoveCurrent(&iterator);
+               }
+           }
+        }
         pthread_mutex_lock(&lock);
         current = current ? current->next : NULL;
         pthread_mutex_unlock(&lock);
     }while(1);
+    return (void *)0;
 }
 
 static void * Event_Entry(void *p)
@@ -328,9 +350,6 @@ static void * Event_Entry(void *p)
 
     while (1) {
         nsd = event_wait(evb, 500);
-        if (nsd == 0) {
-            log_debug(LOG_INFO, "wait return %d", nsd);
-        }
         if (nsd < 0) {
             log_debug(LOG_INFO, "wait error");
             return (void *)0;

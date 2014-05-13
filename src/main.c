@@ -99,9 +99,10 @@ int main(int argc, char **argv)
     sa.sa_handler = SIG_IGN;
     sigaction(SIGPIPE, &sa, 0 );
 
-    log_init(LOG_VERB, NULL);
+    log_init(LOG_DEBUG, NULL);
     clive_init_channel();
     clive_media_task_thread_start();
+    clive_http_server_start();
     log_debug(LOG_DEBUG, "cliveserver starting..");
     evb  = event_base_create(EVENT_SIZE, &clive_core_core);
     buffer = read_cfg("cliveserver.conf");
@@ -190,9 +191,6 @@ int main(int argc, char **argv)
     while (1) {
         int nsd;
         nsd = event_wait(evb, 500);
-        if (nsd == 0) {
-            log_debug(LOG_INFO, "wait return %d", nsd);
-        }
         if (nsd < 0) {
             log_debug(LOG_INFO, "wait error");
             return (void *)0;

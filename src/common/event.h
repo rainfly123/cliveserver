@@ -46,7 +46,7 @@ struct con
    char type;
    unsigned int events;
    bool done;
-   bool err;
+   int err;
    void *evb;
    conn_recv_t     recv;          /* recv (read) handler */
    conn_send_t     send;          /* send (write) handler */
