@@ -79,6 +79,6 @@ int clive_media_add_output(sMedia *media, struct kfifo *buffer);
 /*
   start the repacking task thread
 */
-int clive_task_thread_start(void);
+int clive_media_task_thread_start(void);
 
 #endif

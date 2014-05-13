@@ -28,4 +28,5 @@
 
 int clive_http_server_start(void);
 int clive_http_server_stop(void);
+int clive_http_close_media(struct kfifo *buffer);
 #endif

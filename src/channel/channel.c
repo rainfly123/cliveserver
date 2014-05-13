@@ -58,7 +58,7 @@ static int udp_recv(struct con *conn)
 {
     ssize_t n = 0, w = 0;
     Channel *channel;
-    uint8_t buffer[MAX_UDP_LEN]:
+    uint8_t buffer[MAX_UDP_LEN];
     uint32_t total;
 
     ASSERT(conn != NULL);
@@ -72,7 +72,7 @@ static int udp_recv(struct con *conn)
             if (buffer[0] == 'F') {
                 channel->input_media_type = FLV;
                 break;
-            }else {
+            }else if (buffer[0] == 0x47) {
                 channel->input_media_type = FLV;
                 break;
             } else {
@@ -89,12 +89,11 @@ static int udp_recv(struct con *conn)
             log_error("recv on %d failed: %s", conn->skt, strerror(errno));
             return CL_ERROR;
         }
-        }
         w = kfifo_put(channel->buffer, buffer, n); 
         if (w < n){
             log_error("buffer overflow");
         }
-        clive_media_attach(channel->flv_media, channel->ts_media, channel->buffer)
+        clive_media_attach(channel->flv_media, channel->ts_media, channel->buffer);
         if (channel->input_media_type == TS) {
             clive_media_settype(channel->flv_media, TS2FLV, TS);
             clive_media_settype(channel->ts_media, TS2TS, TS);
@@ -102,7 +101,8 @@ static int udp_recv(struct con *conn)
         if (channel->input_media_type == FLV) {
             clive_media_settype(channel->flv_media, FLV2FLV, FLV);
             clive_media_settype(channel->ts_media, FLV2TS, FLV);
-        }
+       }
+       }
     }
     for (;;) {
         //////////////////////////
@@ -127,7 +127,6 @@ static int udp_recv(struct con *conn)
             return CL_ERROR;
         }
     }
-
 }
 
 static void tcp_close(struct con * conn)

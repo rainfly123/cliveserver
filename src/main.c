@@ -100,8 +100,9 @@ int main(int argc, char **argv)
     sigaction(SIGPIPE, &sa, 0 );
 
     log_init(LOG_VERB, NULL);
-    log_debug(LOG_DEBUG, "cliveserver starting..");
     clive_init_channel();
+    clive_media_task_thread_start();
+    log_debug(LOG_DEBUG, "cliveserver starting..");
     evb  = event_base_create(EVENT_SIZE, &clive_core_core);
     buffer = read_cfg("cliveserver.conf");
     tokens = parse_cfg(buffer);

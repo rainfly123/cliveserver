@@ -18,6 +18,8 @@
   * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
   *
   */
+#include <unistd.h>
+#include <fcntl.h>
 #include <pthread.h>
 #include <errno.h>
 #include "tcp.h"
@@ -137,7 +139,7 @@ static void conn_close(struct con * conn)
 static int conn_recv(struct con *conn)
 {
     ssize_t n;
-    char *channel_name;
+    char *channel_name = NULL;
     char *token;
     char *slash;
     int media_type = FLV;
@@ -221,9 +223,6 @@ static int conn_recv(struct con *conn)
     return CL_ERROR;
 }
 
-static int conn_send(struct con *conn)
-{
-}
 
 static void http_close(struct con * conn)
 {
@@ -258,9 +257,6 @@ static int http_recv(struct con * conn)
     }
     return CL_OK;
 }
-
-
-
 
 
 /*
@@ -362,6 +358,13 @@ int clive_http_server_start(void)
 //no need to stop i think
 int clive_http_server_stop(void)
 {
+    return 0;
+}
+//used to close HTTP_TASK, called by channel or media module
+//HTTP_TASK.buffer 
+int clive_http_close_media(struct kfifo *buffer)
+{
+    return 0;
 }
 
 #ifdef TEST

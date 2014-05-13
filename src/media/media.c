@@ -44,6 +44,9 @@ int clive_media_add_output(sMedia *media, struct kfifo *buffer)
 */
 int clive_media_stop(sMedia *media)
 {
+    if (media != NULL) {
+        clive_free(media);
+    }
 }
 
 /*
@@ -104,7 +107,7 @@ static void * Entry(void *p)
   start the repacking task thread
 */
 
-int clive_task_thread_start(void)
+int clive_media_task_thread_start(void)
 {
     pthread_t tid;
     pthread_attr_t attr;
