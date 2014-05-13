@@ -71,10 +71,8 @@ static int udp_recv(struct con *conn)
         if (n > 0) {
             if (buffer[0] == 'F') {
                 channel->input_media_type = FLV;
-                break;
             }else if (buffer[0] == 0x47) {
-                channel->input_media_type = FLV;
-                break;
+                channel->input_media_type = TS;
             } else {
                 log_error("unsupported stream format");
             }
@@ -93,7 +91,6 @@ static int udp_recv(struct con *conn)
         if (w < n){
             log_error("buffer overflow");
         }
-        clive_media_attach(channel->flv_media, channel->ts_media, channel->buffer);
         if (channel->input_media_type == TS) {
             clive_media_settype(channel->flv_media, TS2FLV, TS);
             clive_media_settype(channel->ts_media, TS2TS, TS);
@@ -101,8 +98,14 @@ static int udp_recv(struct con *conn)
         if (channel->input_media_type == FLV) {
             clive_media_settype(channel->flv_media, FLV2FLV, FLV);
             clive_media_settype(channel->ts_media, FLV2TS, FLV);
+        }
+        clive_media_attach(channel->flv_media, channel->ts_media, channel->buffer);
+        break;
        }
-       }
+       if (channel->input_media_type == TS)
+           log_debug(LOG_INFO, "stream format detected MPEGTS");
+       else
+           log_debug(LOG_INFO, "stream format detected FLV");
     }
     for (;;) {
         //////////////////////////
