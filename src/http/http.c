@@ -51,20 +51,25 @@ struct http_client {
     uint32_t rlen;
 };
 
+#define CHANNEL_NAME_SIZE 48
+
 typedef struct http_task {
     List_t clients; //the clients watching the same channel
+    pthread_mutex_t lock;  //protect clients
     struct kfifo *buffer; //the channels data ()
-    char channel_name[48]; //channel name with _ts or _flv suffix
+    char channel_name[CHANNEL_NAME_SIZE + 1]; //channel name with _ts or _flv suffix
 }HTTP_Task;
 
-static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static List_t channels;  //store all channel, in the form of http task 
 
 static void http_add_task(char *name)
 {
     HTTP_Task *task = clive_calloc(1, sizeof(HTTP_Task));
-    strcpy(task->channel_name, name);
+    strncpy(task->channel_name, name, CHANNEL_NAME_SIZE);
     task->buffer = kfifo_alloc(128 * 1024);
+    pthread_mutex_init(&task->lock, NULL);
+
+    ListAdd(&channels, task);
 }
 
 static void http_add_client(char *name, int fd)
@@ -81,7 +86,9 @@ static void http_add_client(char *name, int fd)
         p = ListIterator_Current(iterator);
         val = strncmp(p->channel_name, name, strlen(p->channel_name));
         if (val == 0) {
+            pthread_mutex_lock(&p->lock);
             ListAdd(&p->clients, data);
+            pthread_mutex_unlock(&p->lock);
         }
     }
 }
@@ -90,7 +97,7 @@ static bool http_task_is_existed(const char *name)
 {
     ListIterator_t iterator;
     HTTP_Task *p;
-    int val;
+    int val = -1;
 
     if (name == NULL) {
         return false;
@@ -103,15 +110,15 @@ static bool http_task_is_existed(const char *name)
         p = ListIterator_Current(iterator);
         val = strncmp(p->channel_name, name, strlen(p->channel_name));
         if (val == 0)
-            return true;
+            break;
     }
-    return false;
+    return (val == 0) ? true: false;
 }
 
 static HTTP_Task * http_task_find(const char *name)
 {
     ListIterator_t iterator;
-    HTTP_Task *p;
+    HTTP_Task *p = NULL;
     int val;
 
     if (name == NULL) {
@@ -125,9 +132,9 @@ static HTTP_Task * http_task_find(const char *name)
         p = ListIterator_Current(iterator);
         val = strncmp(p->channel_name, name, strlen(p->channel_name));
         if (val == 0)
-            return p;
+            break;
     }
-    return NULL;
+    return p;
 }
 
 static void conn_close(struct con * conn)
@@ -184,6 +191,7 @@ static int conn_recv(struct con *conn)
             }
             else {
                 http_add_task(channel_name);
+                http_add_client(channel_name, conn->skt);
             }
             HTTP_Task *task_temp = http_task_find(channel_name);
             Channel *temp = clive_channel_find(channel_name);
@@ -192,6 +200,7 @@ static int conn_recv(struct con *conn)
                     clive_media_add_output(temp->flv_media, task_temp->buffer);
                 else
                     clive_media_add_output(temp->ts_media, task_temp->buffer);
+                  printf("==================\n");
             }
 
             if (media_type == FLV)
@@ -309,9 +318,7 @@ static void * Entry(void *p)
    
     do {
         if (current == NULL) {
-            pthread_mutex_lock(&lock);
             current = channels.head ;
-            pthread_mutex_unlock(&lock);
             sched_yield();
             continue;
         }
@@ -320,6 +327,7 @@ static void * Entry(void *p)
         if (kfifo_len(task->buffer) > 0) {
            len = kfifo_get(task->buffer, buffer, 1024);
            log_debug(LOG_INFO, "http task got %d data from its buffer", len);
+           pthread_mutex_lock(&task->lock);
            ListIterator_Init(iterator, &task->clients); 
            for ( ; ListIterator_MoreEntries(iterator); ListIterator_Next(iterator))
            {
@@ -332,10 +340,9 @@ static void * Entry(void *p)
                    ListRemoveCurrent(&iterator);
                }
            }
+           pthread_mutex_unlock(&task->lock);
         }
-        pthread_mutex_lock(&lock);
-        current = current ? current->next : NULL;
-        pthread_mutex_unlock(&lock);
+        current = current->next;
     }while(1);
     return (void *)0;
 }

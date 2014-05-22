@@ -101,7 +101,7 @@ static void * Entry(void *p)
         task = current->data;
         if (kfifo_len(task->buffer) > 0) {
            len = kfifo_get(task->buffer, buffer, 1024);
-           log_debug(LOG_INFO, "media task got %d data from channel's buffer", len);
+           //log_debug(LOG_INFO, "media task got %d data from channel's buffer", len);
            clive_media_consume_data(task->flv_media, buffer, len);
            clive_media_consume_data(task->ts_media, buffer, len);
        }

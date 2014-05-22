@@ -76,28 +76,29 @@ static int udp_recv(struct con *conn)
             } else {
                 log_error("unsupported stream format");
             }
-        }
-
-        if (errno == EINTR) {
-            continue;
-        } else if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            return CL_OK;
         } else {
-            conn->err = errno;
-            log_error("recv on %d failed: %s", conn->skt, strerror(errno));
-            return CL_ERROR;
+
+            if (errno == EINTR) {
+                continue;
+            } else if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                return CL_OK;
+            } else {
+                conn->err = errno;
+                log_error("recv on %d failed: %s", conn->skt, strerror(errno));
+                return CL_ERROR;
+            }
         }
         w = kfifo_put(channel->buffer, buffer, n); 
         if (w < n){
             log_error("buffer overflow");
         }
         if (channel->input_media_type == TS) {
-            clive_media_settype(channel->flv_media, TS2FLV, TS);
-            clive_media_settype(channel->ts_media, TS2TS, TS);
+            clive_media_setype(channel->flv_media, TS2FLV, TS);
+            clive_media_setype(channel->ts_media, TS2TS, TS);
         }
         if (channel->input_media_type == FLV) {
-            clive_media_settype(channel->flv_media, FLV2FLV, FLV);
-            clive_media_settype(channel->ts_media, FLV2TS, FLV);
+            clive_media_setype(channel->flv_media, FLV2FLV, FLV);
+            clive_media_setype(channel->ts_media, FLV2TS, FLV);
         }
         clive_media_attach(channel->flv_media, channel->ts_media, channel->buffer);
         break;
@@ -118,16 +119,16 @@ static int udp_recv(struct con *conn)
                 total += w;
             } while (total < n);
             return CL_OK;
-        }
-
-        if (errno == EINTR) {
-            continue;
-        } else if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            return CL_OK;
         } else {
-            conn->err = errno;
-            log_error("recv on %d failed: %s", conn->skt, strerror(errno));
-            return CL_ERROR;
+            if (errno == EINTR) {
+                continue;
+            } else if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                return CL_OK;
+            } else {
+                conn->err = errno;
+                log_error("recv on %d failed: %s", conn->skt, strerror(errno));
+                return CL_ERROR;
+            }
         }
     }
 }
